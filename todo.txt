@@ -1,0 +1,10 @@
+Ce avem de facut:
+-----------------
+
+  -Istoric comenzi
+  -Pipe 
+  -Expresii logice
+  -Suspendarea unui program(Ctrl + C)
+  -Help
+  -CD
+  -Touch
