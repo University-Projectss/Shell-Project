@@ -44,7 +44,7 @@ include/divisible/*
 
 
 ## Local 
-
+Code/shell
 .idea/*.xml
 
 build/**/*
