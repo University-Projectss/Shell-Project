@@ -8,3 +8,5 @@ Ce avem de facut:
   -Help
   -CD
   -Touch
+
+testez push in main
