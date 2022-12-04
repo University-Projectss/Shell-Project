@@ -5,6 +5,29 @@
 #include <string.h>
 #define charSize sizeof(char)
 
+int ourAtoi(const char ourString[])
+{
+    int number = 0;
+    int i = 0;
+    int sign = 1;
+
+    while (ourString[i] == ' ' || ourString[i] == '\n' || ourString[i] == '\t') i++;
+
+    if (ourString[i] == '+' || ourString[i] == '-')
+        if (ourString[i] == '-')
+            sign = -1;
+
+    i++;
+
+    while (ourString[i] && (ourString[i] >= '0' && ourString[i] <= '9'))
+    {
+        number = number * 10 + (ourString[i] - '0');
+        i++;
+    }
+
+    return sign * number;
+}
+
 void printShellLine()
 {
     char *path = (char *)malloc(512 * charSize);
