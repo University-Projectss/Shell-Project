@@ -5,6 +5,13 @@
 #include <string.h>
 #define charSize sizeof(char)
 
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/stat.h>
+
+
+//prost eu, nu merge cum imi imaginam, scuze irina
+
 int ourAtoi(const char ourString[])
 {
     int number = 0;
