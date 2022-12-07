@@ -7,8 +7,6 @@
 #include <errno.h>
 #define charSize sizeof(char)
 
-int history, historyIndex;
-
 //prost eu, nu merge cum imi imaginam, scuze irina
 // int ourAtoi(const char ourString[]) {
 //     int number = 0;
@@ -37,23 +35,18 @@ void printShellLine() {
     printf("%s ~ >> ", path);
 }
 
-bool readInput(char *command) {
+bool readInput(char *command, int file) {
     char *buff = (char *)malloc(strlen(command) * charSize);
     fgets(buff, 512, stdin);
 
     if (strcmp(buff, "\n") == 0)    //if there's no command
         return false;               //there's nothing to show
 
-    else if(strcmp(command, "^[[A")){
-        //show last commands if there's any
-        // int lastCommand = read(history, )
-    }
-
     buff[strlen(buff) - 1] = '\0';
     strcpy(command, buff);
 
-    int n = write(history, command, strlen(command));
-    int m = write(history, "\n", sizeof(char));
+    int n = write(file, command, strlen(command));
+    int m = write(file, "\n", sizeof(char));
     if( n < 0 || m < 0 ) {
         perror("Could not save the command in history");
         return errno;
@@ -63,20 +56,34 @@ bool readInput(char *command) {
 }
 
 void clearCommand() {
-    system("clear"); // on mac is clear, on linux is cls
+    system("clear"); // on mac is clear, on linux/windows is cls
 }
 
-int main(int arg, char **argv)
-{
-    history = open("shellHistory", O_RDWR | O_CREAT | O_APPEND, S_IRWXU);
+void showHistory() {
+    char buff[513];
+    int n, index = 1;
+    int file = open("shellHistory", O_RDONLY);
+
+    n = read(file, &buff, sizeof(buff));
+    char *p = strtok(buff, "\n");
+    while(p && strlen(p) > 0) {
+        printf("%d %s\n", index++, p);
+        p = strtok(NULL, "\n");
+    }
+}
+
+int main(int arg, char **argv) {
+    int history = open("shellHistory", O_RDWR | O_CREAT, S_IRWXU);
     
     char *command = (char *)malloc(512 * charSize);
     while (true) {
         printShellLine();
 
-        if (readInput(command)) {
+        if (readInput(command, history)) {
             if (strcmp(command, "clear") == 0) {
                 clearCommand();
+            } else if(strcmp(command, "history") == 0) {
+                showHistory();
             } else {
                 printf("Command not found\n");
             }
