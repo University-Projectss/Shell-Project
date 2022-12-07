@@ -6,10 +6,16 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+
 
 #define charSize sizeof(char)
+#define intSize sizeof(int)
+#define longSize sizeof(long)
 
- /// Function for Conversion String -> Int
+#define maxSizeCommand 1000
+
+ /// Functie pentru conversia unui String in Int
 
  int ourAtoi(const char ourString[]) {
      int number = 0;
@@ -32,7 +38,7 @@
      return sign * number;
  }
 
- /// Function to print a New Shell Line
+ /// Functie ce genereaza o noua linie in Shell
 
 void printShellLine() {
     char *path = (char *)malloc(512 * charSize);
@@ -40,13 +46,13 @@ void printShellLine() {
     printf("%s ~ >> ", path);
 }
 
- /// Function to Read Input
+ /// Functie ce citeste comanda introdusa
 
 bool readInput(char *command, int file) {
     char *buff = (char *)malloc(strlen(command) * charSize);
     fgets(buff, 512, stdin);
 
-    /// If there is no command, there is nothing to show.
+    /// Daca nu avem o comanda, nu avem ce afisa
 
     if (strcmp(buff, "\n") == 0)
         return false;
@@ -64,17 +70,31 @@ bool readInput(char *command, int file) {
     return true;
 }
 
- /// Function to Clear Command
+ /// Functie ce imparte comanda in cuvinte
+
+void parseCommand (char *str, char** parsedStr)
+{
+    for (int i=0; i<maxSizeCommand; i++)
+    {
+        parsedStr[i] = strtok(str, " ");
+        if (parsedStr[i] == NULL)
+            break;
+        if (strlen(parsedStr[i]) == 0)
+            i--;
+    }
+}
+
+ /// Functia CLEAR ce elibereaza Shell-ul
 
 void clearCommand() {
 
-    /// On Mac is clear.
-    /// On Linux and Windows is cls.
+    /// Pe Mac avem clear
+    /// Pe Linux si Windows avem cls
 
     system("clear");
 }
 
- /// Function to Show History
+ /// Functie ce afiseaza istoricul comenzilor
 
 void showHistory() {
     char buff[513];
@@ -87,6 +107,61 @@ void showHistory() {
         printf("%d %s\n", index++, p);
         p = strtok(NULL, "\n");
     }
+}
+
+ /// Functia CP pentru copierea unui fisier in altul
+
+bool cp (char* inFile, char* outFile)
+{
+    int n, inF, outF;
+    char buf[100000];
+
+    /// Daca nu putem deschide fisierele, returnam o eroare
+
+    inF = open(inFile, O_RDONLY);
+    if (inF == 0)
+    {
+        perror("Could not open the file");
+        return errno;
+    }
+
+    outF = open(outFile, O_RDONLY|O_CREAT|O_TRUNC, S_IRWXU);
+    if (outF == 0)
+    {
+        perror("Could not open the file");
+        return errno;
+    }
+
+    /// Citim caracter cu caracter fisierul si il copiem in celalalt
+
+    n = read(inF, buf, 100000);
+    while (n > 0)
+    {
+        write(outF, buf, n);
+        n = read(inF, buf, 100000);
+    }
+
+    return true;
+}
+
+ /// Functia TOUCH pentru crearea unui fisier
+
+bool touch(const char* file ){
+    /// In file avem numele fisierului (+ extensie) pe care il vom crea
+
+    int success = open(file, O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
+    // In success este returnat un file descriptor la fisierul creat:
+    // - punem flag-ul O_CREAT pentru a crea fisierul
+    // - flag-urile S_IRWXU, S_IRWXG, S_IRWXO sunt pentru a da permisiuni de citire, scriere si executare user-ilor, grupurilor si others
+
+    // Success va avea valoarea -1 doar daca a avut loc o eroare la crearea file descriptor-ului
+    if(success == -1)
+        return false;
+
+    // Inchidem file descriptor-ul
+    close(success);
+
+    return true;
 }
 
 int main(int arg, char **argv) {
