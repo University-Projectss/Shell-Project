@@ -5,29 +5,34 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/stat.h>
+
 #define charSize sizeof(char)
 
-//prost eu, nu merge cum imi imaginam, scuze irina
-// int ourAtoi(const char ourString[]) {
-//     int number = 0;
-//     int i = 0;
-//     int sign = 1;
+ /// Function for Conversion String -> Int
 
-//     while (ourString[i] == ' ' || ourString[i] == '\n' || ourString[i] == '\t') i++;
+ int ourAtoi(const char ourString[]) {
+     int number = 0;
+     int i = 0;
+     int sign = 1;
 
-//     if (ourString[i] == '+' || ourString[i] == '-')
-//         if (ourString[i] == '-')
-//             sign = -1;
+     while (ourString[i] == ' ' || ourString[i] == '\n' || ourString[i] == '\t') i++;
 
-//     i++;
+     if (ourString[i] == '+' || ourString[i] == '-')
+         if (ourString[i] == '-')
+             sign = -1;
 
-//     while (ourString[i] && (ourString[i] >= '0' && ourString[i] <= '9')) {
-//         number = number * 10 + (ourString[i] - '0');
-//         i++;
-//     }
+     i++;
 
-//     return sign * number;
-// }
+     while (ourString[i] && (ourString[i] >= '0' && ourString[i] <= '9')) {
+         number = number * 10 + (ourString[i] - '0');
+         i++;
+     }
+
+     return sign * number;
+ }
+
+ /// Function to print a New Shell Line
 
 void printShellLine() {
     char *path = (char *)malloc(512 * charSize);
@@ -35,12 +40,16 @@ void printShellLine() {
     printf("%s ~ >> ", path);
 }
 
+ /// Function to Read Input
+
 bool readInput(char *command, int file) {
     char *buff = (char *)malloc(strlen(command) * charSize);
     fgets(buff, 512, stdin);
 
-    if (strcmp(buff, "\n") == 0)    //if there's no command
-        return false;               //there's nothing to show
+    /// If there is no command, there is nothing to show.
+
+    if (strcmp(buff, "\n") == 0)
+        return false;
 
     buff[strlen(buff) - 1] = '\0';
     strcpy(command, buff);
@@ -55,9 +64,17 @@ bool readInput(char *command, int file) {
     return true;
 }
 
+ /// Function to Clear Command
+
 void clearCommand() {
-    system("clear"); // on mac is clear, on linux/windows is cls
+
+    /// On Mac is clear.
+    /// On Linux and Windows is cls.
+
+    system("clear");
 }
+
+ /// FUnction to Show History 
 
 void showHistory() {
     char buff[513];
