@@ -74,7 +74,7 @@ void clearCommand() {
     system("clear");
 }
 
- /// FUnction to Show History 
+ /// Function to Show History
 
 void showHistory() {
     char buff[513];
