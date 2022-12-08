@@ -79,7 +79,7 @@ int parseCommand (char *str, char arr[100][512])
     token = strtok(str, " ");
 
     while(token != NULL ) {
-        strcpy(&arr[i++], token);
+        strcpy(arr[i++], token);
         token = strtok(NULL, " ");
     }
     return i;
@@ -92,7 +92,7 @@ void clearCommand() {
     /// Pe Mac avem clear
     /// Pe Linux si Windows avem cls
 
-    system("cls");
+    system("clear");
 }
 
  /// Functie ce afiseaza istoricul comenzilor
@@ -115,7 +115,7 @@ void showHistory() {
 bool cp (char* inFile, char* outFile)
 {
     int n, inF, outF;
-    char buf[100000];
+    char* buf = (char *)malloc(1024 * charSize);
 
     /// Daca nu putem deschide fisierele, returnam o eroare
 
@@ -126,7 +126,7 @@ bool cp (char* inFile, char* outFile)
         return errno;
     }
 
-    outF = open(outFile, O_RDONLY|O_CREAT|O_TRUNC, S_IRWXU);
+    outF = open(outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
     if (outF < 0)
     {
         perror("Could not open the out file");
@@ -135,11 +135,12 @@ bool cp (char* inFile, char* outFile)
 
     /// Citim caracter cu caracter fisierul si il copiem in celalalt
 
-    n = read(inF, buf, strlen((buf)));
+    n = read(inF, buf, 1024 * charSize);
+    
     while (n > 0)
     {
-        write(outF, buf, n);
-        n = read(inF, buf, strlen((buf)));
+        write(outF, buf, strlen(buf));
+        n = read(inF, buf, 1024 * charSize);
     }
 
     return true;
@@ -173,7 +174,7 @@ void allCommands(char *command, int history)
     if (readInput(command, history)) {
         char parsed[100][512];
         int dim = 0;
-        dim = parseCommand(command, &parsed);
+        dim = parseCommand(command, parsed);
         if (strcmp(parsed[0], "clear") == 0) {
             clearCommand();
         } else if(strcmp(parsed[0], "history") == 0) {
