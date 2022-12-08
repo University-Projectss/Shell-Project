@@ -71,16 +71,18 @@ bool readInput(char *command, int file) {
 
  /// Functie ce imparte comanda in cuvinte
 
-void parseCommand (char *str, char** parsedStr)
+int parseCommand (char *str, char arr[100][512])
 {
-    for (int i=0; i<maxSizeCommand; i++)
-    {
-        parsedStr[i] = strtok(str, " ");
-        if (parsedStr[i] == NULL)
-            break;
-        if (strlen(parsedStr[i]) == 0)
-            i--;
+    char *token;
+    int i=0;
+
+    token = strtok(str, " ");
+
+    while(token != NULL ) {
+        strcpy(&arr[i++], token);
+        token = strtok(NULL, " ");
     }
+    return i;
 }
 
  /// Functia CLEAR ce elibereaza Shell-ul
@@ -118,26 +120,26 @@ bool cp (char* inFile, char* outFile)
     /// Daca nu putem deschide fisierele, returnam o eroare
 
     inF = open(inFile, O_RDONLY);
-    if (inF == 0)
+    if (inF < 0)
     {
-        perror("Could not open the file");
+        perror("Could not open the in file");
         return errno;
     }
 
     outF = open(outFile, O_RDONLY|O_CREAT|O_TRUNC, S_IRWXU);
-    if (outF == 0)
+    if (outF < 0)
     {
-        perror("Could not open the file");
+        perror("Could not open the out file");
         return errno;
     }
 
     /// Citim caracter cu caracter fisierul si il copiem in celalalt
 
-    n = read(inF, buf, 100000);
+    n = read(inF, buf, strlen((buf)));
     while (n > 0)
     {
         write(outF, buf, n);
-        n = read(inF, buf, 100000);
+        n = read(inF, buf, strlen((buf)));
     }
 
     return true;
@@ -169,11 +171,17 @@ bool touch(const char* file ){
 void allCommands(char *command, int history)
 {
     if (readInput(command, history)) {
-        if (strcmp(command, "clear") == 0) {
+        char parsed[100][512];
+        int dim = 0;
+        dim = parseCommand(command, &parsed);
+        if (strcmp(parsed[0], "clear") == 0) {
             clearCommand();
-        } else if(strcmp(command, "history") == 0) {
+        } else if(strcmp(parsed[0], "history") == 0) {
             showHistory();
-        } else {
+        } else if (strcmp(parsed[0], "cp") == 0) {
+            cp(parsed[1], parsed[2]);
+        }
+        else {
             printf("Command not found\n");
         }
     }
