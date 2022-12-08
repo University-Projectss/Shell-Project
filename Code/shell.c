@@ -181,6 +181,8 @@ void allCommands(char *command, int history)
             showHistory();
         } else if (strcmp(parsed[0], "cp") == 0) {
             cp(parsed[1], parsed[2]);
+        } else if (strcmp(parsed[0], "touch") == 0){
+            touch(parsed[1]);
         }
         else {
             printf("Command not found\n");
