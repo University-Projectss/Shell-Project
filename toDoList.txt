@@ -1,0 +1,81 @@
+To Do List:
+- Help
+- History (check)
+- Clear (check)
+- Cd
+- Pwd
+- Ls
+- Touch
+- Rm
+- Cp
+- Mkdir
+- Rmdir
+- Echo
+- Pipe (|)
+- Expresii Logice (&& si ||)
+- Quit
+- Selectare comanda
+- Parsare comanda (check)
+- Citire comanda (check)
+- Linie noua terminal (check)
+- Rescriere Atoi (check)
+
+1. Help
+-- functie ce afiseaza comenzile si descrierea lor
+
+2. History
+-- functie ce afiseaza istoricul comenzilor
+
+3. Clear
+-- functie ce elibereaza terminalul
+
+4. Cd
+-- functie de schimbare a directorului
+
+5. Pwd
+-- functie ce obtine path-ul directorului curent
+
+6. Ls
+-- functie ce obtine continutul directorului curent
+
+7. Touch
+-- functie ce creeaza un nou fisier cu permisiune de scriere
+
+8. Rm
+-- functie ce sterge un fisier
+
+9. Cp
+-- functie ce copiaza continutul unui fisier in altul
+
+10. Mkdir
+-- functie ce creeaza un nou director
+
+11. Rmdir
+-- functie ce sterge un director
+
+12. Echo
+-- functie pentru repetarea unui string
+
+13. Pipe
+-- functie pentru legatura iesire-intrare
+
+14. Expresii logice
+-- functie pentru impplementarea && si ||
+
+15. Quit
+-- functie pentru suspendarea unui program
+
+16. Selectare comanda
+-- pentru a nu aglomera functia main, sa facem o functie separata sub forma unui meniu care decide ce comanda va fi executata
+
+17. Parsare comanda
+-- functie ce imparte comanda
+
+18. Citire comanda
+-- functie ce citeste o comanda
+
+19. Linie noua terminal
+-- functie ce ne da o noua linie de terminal
+
+20. Rescriere Atoi
+-- o lasam acolo, poate e folositoare la ceva
