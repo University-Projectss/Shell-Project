@@ -1,26 +1,26 @@
 To Do List:
-- Help
+- Man (check)
 - History (check)
 - Clear (check)
 - Cd
 - Pwd
 - Ls
-- Touch
+- Touch (check)
 - Rm
-- Cp
+- Cp (check)
 - Mkdir
 - Rmdir
 - Echo
 - Pipe (|)
 - Expresii Logice (&& si ||)
 - Quit
-- Selectare comanda
+- Selectare comanda (check - adaugare constanta)
 - Parsare comanda (check)
 - Citire comanda (check)
 - Linie noua terminal (check)
 - Rescriere Atoi (check)
 
-1. Help
+1. Man
 -- functie ce afiseaza comenzile si descrierea lor
 
 2. History

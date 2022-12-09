@@ -37,6 +37,26 @@
      return sign * number;
  }
 
+  /// Functia MAN ce ofera un manual de utilizare al shell-ului
+
+  void man()
+  {
+      printf("MANUAL\n");
+      printf("1. MAN: shows all the commands\n");
+      printf("2. HISTORY: shows all the commands that ran in the current session\n");
+      printf("3. CLEAR: clears the terminal\n");
+      printf("4. PWD: prints the path of the current directory\n");
+      printf("5. LS: lists all files and directories of the current directory\n");
+      printf("6. CD: changes the current directory\n");
+      printf("7. TOUCH: creates a new empty file\n");
+      printf("8. RM: removes a file\n");
+      printf("9. CP: copies the content of a file (first file in the command) to another file (second file in the command)\n");
+      printf("10. MKDIR: creates a new empty directory\n");
+      printf("10. RMDIR: removes a directory\n");
+      printf("11. ECHO: displays the string given as an argument\n");
+      printf("12. QUIT: exit\n");
+  }
+
  /// Functie ce genereaza o noua linie in Shell
 
 void printShellLine() {
@@ -169,6 +189,8 @@ bool touch(const char* file ){
     return true;
 }
 
+ /// Functie ce decide ce comanda va fi executata la fiecare instructiune
+
 void allCommands(char *command, int history)
 {
     if (readInput(command, history)) {
@@ -183,9 +205,12 @@ void allCommands(char *command, int history)
             cp(parsed[1], parsed[2]);
         } else if (strcmp(parsed[0], "touch") == 0){
             touch(parsed[1]);
+        } else if (strcmp(parsed[0], "man") == 0){
+            man();
         }
         else {
-            printf("Command not found\n");
+            printf("Command not found! Check our manual -> MAN\n");
+            man();
         }
     }
 }
