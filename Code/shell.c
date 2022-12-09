@@ -39,8 +39,7 @@
 
   /// Functia MAN ce ofera un manual de utilizare al shell-ului
 
-  void man()
-  {
+  void man(){
       printf("MANUAL\n");
       printf("01. MAN: shows all the commands\n");
       printf("    Command: man\n");
@@ -104,8 +103,7 @@ bool readInput(char *command, int file) {
 
  /// Functie ce imparte comanda in cuvinte
 
-int parseCommand (char *str, char arr[100][512])
-{
+int parseCommand (char *str, char arr[100][512]){
     char *token;
     int i=0;
 
@@ -145,23 +143,20 @@ void showHistory() {
 
  /// Functia CP pentru copierea unui fisier in altul
 
-bool cp (char* inFile, char* outFile)
-{
+bool cp (char* inFile, char* outFile){
     int n, inF, outF;
     char* buf = (char *)malloc(1024 * charSize);
 
     /// Daca nu putem deschide fisierele, returnam o eroare
 
     inF = open(inFile, O_RDONLY);
-    if (inF < 0)
-    {
+    if (inF < 0){
         perror("Could not open the in file");
         return errno;
     }
 
     outF = open(outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
-    if (outF < 0)
-    {
+    if (outF < 0){
         perror("Could not open the out file");
         return errno;
     }
@@ -170,8 +165,7 @@ bool cp (char* inFile, char* outFile)
 
     n = read(inF, buf, 1024 * charSize);
     
-    while (n > 0)
-    {
+    while (n > 0){
         write(outF, buf, strlen(buf));
         n = read(inF, buf, 1024 * charSize);
     }
