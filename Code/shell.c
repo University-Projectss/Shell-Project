@@ -42,19 +42,32 @@
   void man()
   {
       printf("MANUAL\n");
-      printf("1. MAN: shows all the commands\n");
-      printf("2. HISTORY: shows all the commands that ran in the current session\n");
-      printf("3. CLEAR: clears the terminal\n");
-      printf("4. PWD: prints the path of the current directory\n");
-      printf("5. LS: lists all files and directories of the current directory\n");
-      printf("6. CD: changes the current directory\n");
-      printf("7. TOUCH: creates a new empty file\n");
-      printf("8. RM: removes a file\n");
-      printf("9. CP: copies the content of a file (first file in the command) to another file (second file in the command)\n");
+      printf("01. MAN: shows all the commands\n");
+      printf("    Command: man\n");
+      printf("02. HISTORY: shows all the commands that ran in the current session\n");
+      printf("    Command: history\n");
+      printf("03. CLEAR: clears the terminal\n");
+      printf("    Command: clear\n");
+      printf("04. PWD: prints the path of the current directory\n");
+      printf("    Command: pwd\n");
+      printf("05. LS: lists all files and directories of the current directory\n");
+      printf("    Command: ls\n");
+      printf("06. CD: changes the current directory\n");
+      printf("    Command: cd new_path\n");
+      printf("07. TOUCH: creates a new empty file\n");
+      printf("    Command: touch file_name\n");
+      printf("08. RM: removes a file\n");
+      printf("    Command: rm file_name\n");
+      printf("09. CP: copies the content of a file (first file in the command) to another file (second file in the command)\n");
+      printf("    Command: cp source_file destination_file\n");
       printf("10. MKDIR: creates a new empty directory\n");
+      printf("    Command: mkdir directory_name\n");
       printf("10. RMDIR: removes a directory\n");
+      printf("    Command: rmdir directory_name\n");
       printf("11. ECHO: displays the string given as an argument\n");
+      printf("    Command: echo string\n");
       printf("12. QUIT: exit\n");
+      printf("    Command: quit\n");
   }
 
  /// Functie ce genereaza o noua linie in Shell
@@ -198,15 +211,35 @@ void allCommands(char *command, int history)
         int dim = 0;
         dim = parseCommand(command, parsed);
         if (strcmp(parsed[0], "clear") == 0) {
-            clearCommand();
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else clearCommand();
         } else if(strcmp(parsed[0], "history") == 0) {
-            showHistory();
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else showHistory();
         } else if (strcmp(parsed[0], "cp") == 0) {
-            cp(parsed[1], parsed[2]);
+            if (dim != 3){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else cp(parsed[1], parsed[2]);
         } else if (strcmp(parsed[0], "touch") == 0){
-            touch(parsed[1]);
+            if (dim != 2){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else touch(parsed[1]);
         } else if (strcmp(parsed[0], "man") == 0){
-            man();
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else man();
         }
         else {
             printf("Command not found! Check our manual -> MAN\n");
