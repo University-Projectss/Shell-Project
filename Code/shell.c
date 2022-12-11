@@ -196,48 +196,147 @@ bool touch(const char* file ){
     return true;
 }
 
+void parseCommandForExec(char* str, char** command) {
+    char *p = (char *)malloc(strlen(str) * charSize), *tok;
+    int i = 1;
+    strcpy(p, str);
+    tok = strtok(p, " ");
+    command[0] = tok;
+    
+    while(tok != NULL) {
+        tok = strtok(NULL, " ");
+        command[i++] = tok;
+    }
+}
+
+void handlePipe(char *command) {
+    int fd[2], oldPipe = STDIN_FILENO; //0(in) is for reading, 1(out) is for writing
+    pid_t pid, pidOriginal;
+
+    char *clearPipe[100];   //if you enter 101 commands I gave you 10 lei
+    int n;
+    for(n = 0; n < 100; n++) {
+        clearPipe[n] = strsep(&command, "|");
+
+        if(clearPipe[n] == NULL)
+            break;
+    }
+
+    pidOriginal = fork();
+
+    if(pidOriginal < 0) {
+        perror("Something went wrong!");
+        exit(0);
+    } else if(pidOriginal == 0) {
+            for(int i = 0; i < n - 1; i++) {//n - 1 cus the last command will execute in parent
+
+            char **commandExec = (char **)malloc(1024 * 1024 * charSize);
+            parseCommandForExec(clearPipe[i], commandExec);
+
+            if(pipe(fd) < 0) {
+                perror("Could not open the pipe");
+                exit(0);
+            }
+
+            pid = fork();
+            if(pid < 0) {
+                perror("Fork error");
+                exit(0);
+            }else if(pid == 0) {
+                //'rotate' the old pipe
+                if(oldPipe != STDIN_FILENO) {
+                    dup2(oldPipe, STDIN_FILENO);
+                    close(oldPipe);
+                }
+
+                //this proccess will write in the current pipe, there's no need to read
+                close(fd[0]);
+                dup2(fd[1], STDOUT_FILENO);
+                close(fd[1]);
+
+                if(execvp(commandExec[0], commandExec) < 0) {
+                    perror("Error runing one of the commands.");
+                    exit(0);
+                }
+            } else {
+                close(oldPipe);
+                close(fd[1]);
+                oldPipe = fd[0];
+            }
+        }
+
+        for(int i = 0; i < n - 1; i++)
+            wait(NULL);
+
+        if(oldPipe != STDIN_FILENO) {
+            dup2(oldPipe, STDIN_FILENO);
+            close(oldPipe);
+        }
+
+        char **commandExec = (char **)malloc(1024 * 1024 * charSize);
+        parseCommandForExec(clearPipe[n - 1], commandExec);
+
+        if(execvp(commandExec[0], commandExec) < 0) {
+            perror("Error runing the last command.");
+            exit(0);
+        }
+    } else {
+        wait(NULL);
+    }    
+}
+
+bool checkForPipe(char *command) {
+    char *p = strstr(command, "|");
+    return !(p == NULL);
+}
  /// Functie ce decide ce comanda va fi executata la fiecare instructiune
 
 void allCommands(char *command, int history)
 {
     if (readInput(command, history)) {
-        char parsed[100][512];
-        int dim = 0;
-        dim = parseCommand(command, parsed);
-        if (strcmp(parsed[0], "clear") == 0) {
-            if (dim != 1){
-                printf("Incorrect command! Check our manual -> MAN\n");
+        if(checkForPipe(command)) {
+            //we have the pipe
+            handlePipe(command);
+        } else {
+            //we don't have pipe
+            char parsed[100][512];
+            int dim = 0;
+            dim = parseCommand(command, parsed);
+            if (strcmp(parsed[0], "clear") == 0) {
+                if (dim != 1){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else clearCommand();
+            } else if(strcmp(parsed[0], "history") == 0) {
+                if (dim != 1){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else showHistory();
+            } else if (strcmp(parsed[0], "cp") == 0) {
+                if (dim != 3){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else cp(parsed[1], parsed[2]);
+            } else if (strcmp(parsed[0], "touch") == 0){
+                if (dim != 2){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else touch(parsed[1]);
+            } else if (strcmp(parsed[0], "man") == 0){
+                if (dim != 1){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else man();
+            }
+            else {
+                printf("Command not found! Check our manual -> MAN\n");
                 man();
             }
-            else clearCommand();
-        } else if(strcmp(parsed[0], "history") == 0) {
-            if (dim != 1){
-                printf("Incorrect command! Check our manual -> MAN\n");
-                man();
-            }
-            else showHistory();
-        } else if (strcmp(parsed[0], "cp") == 0) {
-            if (dim != 3){
-                printf("Incorrect command! Check our manual -> MAN\n");
-                man();
-            }
-            else cp(parsed[1], parsed[2]);
-        } else if (strcmp(parsed[0], "touch") == 0){
-            if (dim != 2){
-                printf("Incorrect command! Check our manual -> MAN\n");
-                man();
-            }
-            else touch(parsed[1]);
-        } else if (strcmp(parsed[0], "man") == 0){
-            if (dim != 1){
-                printf("Incorrect command! Check our manual -> MAN\n");
-                man();
-            }
-            else man();
-        }
-        else {
-            printf("Command not found! Check our manual -> MAN\n");
-            man();
         }
     }
 }

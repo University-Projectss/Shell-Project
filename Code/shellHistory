@@ -1,7 +1,17 @@
-manual
-man ls
-touch
-touch
-touch
-touch
-
+asd
+pwd
+pwd
+echo
+ls | wc -l | xargs printf "0x%x\n" | cowsay
+ifconfig | grep 192.168
+clear
+ls | wc -l | xargs printf "0x%x\n"
+echo hello there | cowsay
+clear
+ls | wc -l
+ls | wc -l | xargs printf "0x%x\n"
+ls | wc -l | xargs printf "0x%x\n"
+wc -l
+ls | wc -l
+clear
+exit
