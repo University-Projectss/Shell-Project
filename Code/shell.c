@@ -170,13 +170,15 @@ bool touch(const char* file ){
 }
 
 void parseCommandForExec(char* str, char** command) {
-    char *p = (char *)malloc(strlen(str) * charSize);
+    char *p = (char *)malloc(strlen(str) * charSize), *tok;
+    int i = 1;
     strcpy(p, str);
-    for(int i = 0; i < 100; i++) {
-        command[i] = strsep(&p, " ");
-
-        if(command[i] == NULL)
-            break;
+    tok = strtok(p, " ");
+    command[0] = tok;
+    
+    while(tok != NULL) {
+        tok = strtok(NULL, " ");
+        command[i++] = tok;
     }
 }
 
@@ -195,9 +197,9 @@ int handlePipe(char *command) {
         clearPipe[i] = strsep(&command, "|");
     }
 
-    char **firstCommand, **secondCommand;
+    char **firstCommand = (char **)malloc(1024 * 1024 * charSize),
+     **secondCommand = (char **)malloc(1024 * 1024 * charSize);
     parseCommandForExec(clearPipe[0], firstCommand);
-    printf("ok\n");
     parseCommandForExec(clearPipe[1], secondCommand);
 
     pid1 = fork();
@@ -208,6 +210,12 @@ int handlePipe(char *command) {
     } else if(pid1 == 0) {
         //first child, is only writing so we close the read descriptor
         close(fd[0]);
+        dup2(fd[1], STDOUT_FILENO);
+        close(fd[1]);
+        if(firstCommand[0] == NULL || strlen(firstCommand[0]) < 2) {
+            printf("Invalid command\n");
+            return 0;
+        }
         if(execvp(firstCommand[0], firstCommand) < 0) {
             perror("Error runing the first command");
             return errno;
@@ -222,6 +230,12 @@ int handlePipe(char *command) {
         } else if(pid2 == 0) {
             //second child, is only reading so we close the write descriptor
             close(fd[1]);
+            dup2(fd[0], STDIN_FILENO);
+            close(fd[0]);
+            if(secondCommand[0] == NULL) {
+                printf("Invalid command\n");
+                return 0;
+            }
             if(execvp(secondCommand[0], secondCommand) < 0) {
                 perror("Error runing the second command");
                 return errno;
@@ -229,6 +243,8 @@ int handlePipe(char *command) {
 
         } else {
             //back on parent
+            close(fd[0]);
+            close(fd[1]);
             wait(NULL);
             wait(NULL);
         }
