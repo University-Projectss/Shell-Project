@@ -183,71 +183,70 @@ void parseCommandForExec(char* str, char** command) {
 }
 
 void handlePipe(char *command) {
-    int fd[2]; //0 is for reading, 1 is for writing
-    pid_t pid1, pid2;
+    int fd[2], oldPipe = STDIN_FILENO; //0(in) is for reading, 1(out) is for writing
+    //oldPipe is IN because every proccess will read from the pipe behind 
+    pid_t pid;
 
-    //for now I will handle only one pipe
-    if(pipe(fd) < 0) {
-        perror("Could not open the pipe");
-        exit(0);
+    char *clearPipe[100];   //if you enter 101 commands I gave you 10 lei
+    int n;
+    for(n = 0; n < 100; n++) {
+        clearPipe[n] = strsep(&command, "|");
+
+        if(clearPipe[n] == NULL)
+            break;
     }
 
-    char *clearPipe[2];
-    for(int i = 0; i < 2; i++) {
-        clearPipe[i] = strsep(&command, "|");
-    }
+    for(int i = 0; i < n - 1; i++) {//n - 1 cus the last command will execute in parent
 
-    char **firstCommand = (char **)malloc(1024 * 1024 * charSize),
-     **secondCommand = (char **)malloc(1024 * 1024 * charSize);
-    parseCommandForExec(clearPipe[0], firstCommand);
-    parseCommandForExec(clearPipe[1], secondCommand);
+        char **commandExec = (char **)malloc(1024 * 1024 * charSize);
+        parseCommandForExec(clearPipe[i], commandExec);
 
-    pid1 = fork();
-
-    if(pid1 < 0) {
-        perror("Fork error first proccess");
-        exit(0);
-    } else if(pid1 == 0) {
-        //first child, is only writing so we close the read descriptor
-        close(fd[0]);
-        dup2(fd[1], STDOUT_FILENO);
-        close(fd[1]);
-        if(firstCommand[0] == NULL || strlen(firstCommand[0]) < 2) {
-            printf("Invalid command\n");
+        if(pipe(fd) < 0) {
+            perror("Could not open the pipe");
             exit(0);
         }
-        if(execvp(firstCommand[0], firstCommand) < 0) {
-            perror("Error runing the first command");
-            exit(0);
-        }
-    } else {
-        //parent process, born the second
-        pid2 = fork();
 
-        if(pid2 < 0) {
-            perror("Fork error second proccess");
+        pid = fork();
+        if(pid < 0) {
+            perror("Fork error");
             exit(0);
-        } else if(pid2 == 0) {
-            //second child, is only reading so we close the write descriptor
-            close(fd[1]);
-            dup2(fd[0], STDIN_FILENO);
+        }else if(pid == 0) {
+            //'rotate' the old pipe
+            if(oldPipe != STDIN_FILENO) {
+                dup2(oldPipe, STDIN_FILENO);
+                close(oldPipe);
+            }
+
+            //this proccess will write in the current pipe, there's no need to read
             close(fd[0]);
-            if(secondCommand[0] == NULL) {
-                printf("Invalid command\n");
-                exit(0);
-            }
-            if(execvp(secondCommand[0], secondCommand) < 0) {
-                perror("Error runing the second command");
-                exit(0);
-            }
+            dup2(fd[1], STDOUT_FILENO);
+            close(fd[1]);
 
+            if(execvp(commandExec[0], commandExec) < 0) {
+                perror("Error runing one of the commands.");
+                exit(0);
+            }
         } else {
-            //back on parent
-            close(fd[0]);
+            close(oldPipe);
             close(fd[1]);
-            wait(NULL);
-            wait(NULL);
+            oldPipe = fd[0];
         }
+    }
+
+    for(int i = 0; i < n - 1; i++)
+        wait(NULL);
+
+    if(oldPipe != STDIN_FILENO) {
+        dup2(oldPipe, STDIN_FILENO);
+        close(oldPipe);
+    }
+
+    char **commandExec = (char **)malloc(1024 * 1024 * charSize);
+    parseCommandForExec(clearPipe[n - 1], commandExec);
+
+    if(execvp(commandExec[0], commandExec) < 0) {
+        perror("Error runing the last command.");
+        exit(0);
     }
 }
 
