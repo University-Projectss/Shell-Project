@@ -184,8 +184,7 @@ void parseCommandForExec(char* str, char** command) {
 
 void handlePipe(char *command) {
     int fd[2], oldPipe = STDIN_FILENO; //0(in) is for reading, 1(out) is for writing
-    //oldPipe is IN because every proccess will read from the pipe behind 
-    pid_t pid;
+    pid_t pid, pidOriginal;
 
     char *clearPipe[100];   //if you enter 101 commands I gave you 10 lei
     int n;
@@ -196,58 +195,67 @@ void handlePipe(char *command) {
             break;
     }
 
-    for(int i = 0; i < n - 1; i++) {//n - 1 cus the last command will execute in parent
+    pidOriginal = fork();
 
-        char **commandExec = (char **)malloc(1024 * 1024 * charSize);
-        parseCommandForExec(clearPipe[i], commandExec);
+    if(pidOriginal < 0) {
+        perror("Something went wrong!");
+        exit(0);
+    } else if(pidOriginal == 0) {
+            for(int i = 0; i < n - 1; i++) {//n - 1 cus the last command will execute in parent
 
-        if(pipe(fd) < 0) {
-            perror("Could not open the pipe");
-            exit(0);
-        }
+            char **commandExec = (char **)malloc(1024 * 1024 * charSize);
+            parseCommandForExec(clearPipe[i], commandExec);
 
-        pid = fork();
-        if(pid < 0) {
-            perror("Fork error");
-            exit(0);
-        }else if(pid == 0) {
-            //'rotate' the old pipe
-            if(oldPipe != STDIN_FILENO) {
-                dup2(oldPipe, STDIN_FILENO);
-                close(oldPipe);
-            }
-
-            //this proccess will write in the current pipe, there's no need to read
-            close(fd[0]);
-            dup2(fd[1], STDOUT_FILENO);
-            close(fd[1]);
-
-            if(execvp(commandExec[0], commandExec) < 0) {
-                perror("Error runing one of the commands.");
+            if(pipe(fd) < 0) {
+                perror("Could not open the pipe");
                 exit(0);
             }
-        } else {
-            close(oldPipe);
-            close(fd[1]);
-            oldPipe = fd[0];
+
+            pid = fork();
+            if(pid < 0) {
+                perror("Fork error");
+                exit(0);
+            }else if(pid == 0) {
+                //'rotate' the old pipe
+                if(oldPipe != STDIN_FILENO) {
+                    dup2(oldPipe, STDIN_FILENO);
+                    close(oldPipe);
+                }
+
+                //this proccess will write in the current pipe, there's no need to read
+                close(fd[0]);
+                dup2(fd[1], STDOUT_FILENO);
+                close(fd[1]);
+
+                if(execvp(commandExec[0], commandExec) < 0) {
+                    perror("Error runing one of the commands.");
+                    exit(0);
+                }
+            } else {
+                close(oldPipe);
+                close(fd[1]);
+                oldPipe = fd[0];
+            }
         }
-    }
 
-    for(int i = 0; i < n - 1; i++)
+        for(int i = 0; i < n - 1; i++)
+            wait(NULL);
+
+        if(oldPipe != STDIN_FILENO) {
+            dup2(oldPipe, STDIN_FILENO);
+            close(oldPipe);
+        }
+
+        char **commandExec = (char **)malloc(1024 * 1024 * charSize);
+        parseCommandForExec(clearPipe[n - 1], commandExec);
+
+        if(execvp(commandExec[0], commandExec) < 0) {
+            perror("Error runing the last command.");
+            exit(0);
+        }
+    } else {
         wait(NULL);
-
-    if(oldPipe != STDIN_FILENO) {
-        dup2(oldPipe, STDIN_FILENO);
-        close(oldPipe);
-    }
-
-    char **commandExec = (char **)malloc(1024 * 1024 * charSize);
-    parseCommandForExec(clearPipe[n - 1], commandExec);
-
-    if(execvp(commandExec[0], commandExec) < 0) {
-        perror("Error runing the last command.");
-        exit(0);
-    }
+    }    
 }
 
 bool checkForPipe(char *command) {

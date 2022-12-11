@@ -1,3 +1,12 @@
 ifconfig | grep 192.168
-f "0x%x\n" | cowsay
-owsay
+cat test | sort
+ls | wc -l | xargs printf "0x%x\n" | cowsay
+clear
+ad|
+clear
+||||
+clear
+|ad|ad|asd|
+clear
+clear
+clear
