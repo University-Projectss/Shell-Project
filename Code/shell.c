@@ -169,23 +169,101 @@ bool touch(const char* file ){
     return true;
 }
 
+void parseCommandForExec(char* str, char** command) {
+    char *p = (char *)malloc(strlen(str) * charSize);
+    strcpy(p, str);
+    for(int i = 0; i < 100; i++) {
+        command[i] = strsep(&p, " ");
+
+        if(command[i] == NULL)
+            break;
+    }
+}
+
+int handlePipe(char *command) {
+    int fd[2]; //0 is for reading, 1 is for writing
+    pid_t pid1, pid2;
+
+    //for now I will handle only one pipe
+    if(pipe(fd) < 0) {
+        perror("Could not open the pipe");
+        return errno;
+    }
+
+    char *clearPipe[2];
+    for(int i = 0; i < 2; i++) {
+        clearPipe[i] = strsep(&command, "|");
+    }
+
+    char **firstCommand, **secondCommand;
+    parseCommandForExec(clearPipe[0], firstCommand);
+    printf("ok\n");
+    parseCommandForExec(clearPipe[1], secondCommand);
+
+    pid1 = fork();
+
+    if(pid1 < 0) {
+        perror("Fork error first proccess");
+        return errno;
+    } else if(pid1 == 0) {
+        //first child, is only writing so we close the read descriptor
+        close(fd[0]);
+        if(execvp(firstCommand[0], firstCommand) < 0) {
+            perror("Error runing the first command");
+            return errno;
+        }
+    } else {
+        //parent process, born the second
+        pid2 = fork();
+
+        if(pid2 < 0) {
+            perror("Fork error second proccess");
+            return errno;
+        } else if(pid2 == 0) {
+            //second child, is only reading so we close the write descriptor
+            close(fd[1]);
+            if(execvp(secondCommand[0], secondCommand) < 0) {
+                perror("Error runing the second command");
+                return errno;
+            }
+
+        } else {
+            //back on parent
+            wait(NULL);
+            wait(NULL);
+        }
+    }
+    return 1;
+}
+
+bool checkForPipe(char *command) {
+    char *p = strstr(command, "|");
+    return !(p == NULL);
+}
+
 void allCommands(char *command, int history)
 {
     if (readInput(command, history)) {
-        char parsed[100][512];
-        int dim = 0;
-        dim = parseCommand(command, parsed);
-        if (strcmp(parsed[0], "clear") == 0) {
-            clearCommand();
-        } else if(strcmp(parsed[0], "history") == 0) {
-            showHistory();
-        } else if (strcmp(parsed[0], "cp") == 0) {
-            cp(parsed[1], parsed[2]);
-        } else if (strcmp(parsed[0], "touch") == 0){
-            touch(parsed[1]);
-        }
-        else {
-            printf("Command not found\n");
+        if(checkForPipe(command)) {
+            //we have the pipe
+            handlePipe(command);
+        } else {
+            //we don't have pipe
+            char parsed[100][512];
+            int dim = 0;
+            dim = parseCommand(command, parsed);
+            if (strcmp(parsed[0], "clear") == 0) {
+                clearCommand();
+            } else if(strcmp(parsed[0], "history") == 0) {
+                showHistory();
+            } else if (strcmp(parsed[0], "cp") == 0) {
+                cp(parsed[1], parsed[2]);
+            } else if (strcmp(parsed[0], "touch") == 0){
+                touch(parsed[1]);
+            }
+            else {
+                printf("Command not found\n");
+            }
         }
     }
 }
