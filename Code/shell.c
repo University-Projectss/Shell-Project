@@ -182,14 +182,14 @@ void parseCommandForExec(char* str, char** command) {
     }
 }
 
-int handlePipe(char *command) {
+void handlePipe(char *command) {
     int fd[2]; //0 is for reading, 1 is for writing
     pid_t pid1, pid2;
 
     //for now I will handle only one pipe
     if(pipe(fd) < 0) {
         perror("Could not open the pipe");
-        return errno;
+        exit(0);
     }
 
     char *clearPipe[2];
@@ -206,7 +206,7 @@ int handlePipe(char *command) {
 
     if(pid1 < 0) {
         perror("Fork error first proccess");
-        return errno;
+        exit(0);
     } else if(pid1 == 0) {
         //first child, is only writing so we close the read descriptor
         close(fd[0]);
@@ -214,11 +214,11 @@ int handlePipe(char *command) {
         close(fd[1]);
         if(firstCommand[0] == NULL || strlen(firstCommand[0]) < 2) {
             printf("Invalid command\n");
-            return 0;
+            exit(0);
         }
         if(execvp(firstCommand[0], firstCommand) < 0) {
             perror("Error runing the first command");
-            return errno;
+            exit(0);
         }
     } else {
         //parent process, born the second
@@ -226,7 +226,7 @@ int handlePipe(char *command) {
 
         if(pid2 < 0) {
             perror("Fork error second proccess");
-            return errno;
+            exit(0);
         } else if(pid2 == 0) {
             //second child, is only reading so we close the write descriptor
             close(fd[1]);
@@ -234,11 +234,11 @@ int handlePipe(char *command) {
             close(fd[0]);
             if(secondCommand[0] == NULL) {
                 printf("Invalid command\n");
-                return 0;
+                exit(0);
             }
             if(execvp(secondCommand[0], secondCommand) < 0) {
                 perror("Error runing the second command");
-                return errno;
+                exit(0);
             }
 
         } else {
@@ -249,7 +249,6 @@ int handlePipe(char *command) {
             wait(NULL);
         }
     }
-    return 1;
 }
 
 bool checkForPipe(char *command) {
