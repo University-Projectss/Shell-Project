@@ -1,15 +1,22 @@
-asd
-pwd
-pwd
-echo
-ls | wc -l | xargs printf "0x%x\n" | cowsay
-ifconfig | grep 192.168
+rm test
+ls -a
+ls
 clear
-ls | wc -l | xargs printf "0x%x\n"
-echo hello there | cowsay
+rm sperSaMergi.txt
+rm -f sperSaMergi.txt
+mkdir aaa
+mkfile aa
+touch yes
 clear
-ls | wc -l
-ls | wc -l | xargs printf "0x%x\n"
+mkdir ah
+r
+mkdir hello
+clear
+ls -al fh
+clear
+cst shellHistory
+cat shellHistory
+ | xargs printf "0x%x\n"
 ls | wc -l | xargs printf "0x%x\n"
 wc -l
 ls | wc -l

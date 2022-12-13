@@ -289,6 +289,30 @@ bool checkForPipe(char *command) {
     char *p = strstr(command, "|");
     return !(p == NULL);
 }
+
+
+void unlimitedPower(char *command) {
+    char *nameThis[100];   //if you enter 101 commands I gave you 10 lei
+    for(int n = 0; n < 100; n++) {
+        nameThis[n] = strsep(&command, " ");
+
+        if(nameThis[n] == NULL) break;
+    }
+
+    pid_t pid = fork();
+    if(pid < 0) {
+        perror("Fork error sir");
+        exit(0);
+    } else if(pid == 0) {
+        if(execvp(nameThis[0], nameThis) < 0) {
+            perror("Command not found");
+            exit(0);
+        }
+    } else {
+        wait(NULL);
+    }
+}
+
  /// Functie ce decide ce comanda va fi executata la fiecare instructiune
 
 void allCommands(char *command, int history)
@@ -334,8 +358,7 @@ void allCommands(char *command, int history)
                 else man();
             }
             else {
-                printf("Command not found! Check our manual -> MAN\n");
-                man();
+                unlimitedPower(command);
             }
         }
     }
