@@ -1,14 +1,20 @@
-rm test
-ls -a
-ls
 clear
-rm sperSaMergi.txt
-rm -f sperSaMergi.txt
-mkdir aaa
+mkdir a
+rm a
 mkfile aa
-touch yes
+mkfile aa.txt
 clear
-mkdir ah
+cd ..
+cd ..
+cd a
+clear
+pwd
+cd ..
+pwd
+clear
+rm yes
+clear
+ ah
 r
 mkdir hello
 clear

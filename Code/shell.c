@@ -108,7 +108,7 @@ int parseCommand (char *str, char arr[100][512]){
     int i=0;
 
     token = strtok(str, " ");
-
+    
     while(token != NULL ) {
         strcpy(arr[i++], token);
         token = strtok(NULL, " ");
@@ -291,13 +291,12 @@ bool checkForPipe(char *command) {
 }
 
 
-void unlimitedPower(char *command) {
-    char *nameThis[100];   //if you enter 101 commands I gave you 10 lei
-    for(int n = 0; n < 100; n++) {
-        nameThis[n] = strsep(&command, " ");
-
-        if(nameThis[n] == NULL) break;
-    }
+void unlimitedPower(char command[100][512], int dim) {
+    char *nameThis[100];
+    int j;
+    for(j = 0; j < dim; j++)
+        nameThis[j] = command[j];
+    nameThis[j] = NULL;
 
     pid_t pid = fork();
     if(pid < 0) {
@@ -358,7 +357,7 @@ void allCommands(char *command, int history)
                 else man();
             }
             else {
-                unlimitedPower(command);
+                unlimitedPower(parsed, dim);
             }
         }
     }
