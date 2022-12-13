@@ -108,7 +108,7 @@ int parseCommand (char *str, char arr[100][512]){
     int i=0;
 
     token = strtok(str, " ");
-
+    
     while(token != NULL ) {
         strcpy(arr[i++], token);
         token = strtok(NULL, " ");
@@ -289,6 +289,29 @@ bool checkForPipe(char *command) {
     char *p = strstr(command, "|");
     return !(p == NULL);
 }
+
+
+void unlimitedPower(char command[100][512], int dim) {
+    char *nameThis[100];
+    int j;
+    for(j = 0; j < dim; j++)
+        nameThis[j] = command[j];
+    nameThis[j] = NULL;
+
+    pid_t pid = fork();
+    if(pid < 0) {
+        perror("Fork error sir");
+        exit(0);
+    } else if(pid == 0) {
+        if(execvp(nameThis[0], nameThis) < 0) {
+            perror("Command not found");
+            exit(0);
+        }
+    } else {
+        wait(NULL);
+    }
+}
+
  /// Functie ce decide ce comanda va fi executata la fiecare instructiune
 
 void allCommands(char *command, int history)
@@ -334,8 +357,7 @@ void allCommands(char *command, int history)
                 else man();
             }
             else {
-                printf("Command not found! Check our manual -> MAN\n");
-                man();
+                unlimitedPower(parsed, dim);
             }
         }
     }

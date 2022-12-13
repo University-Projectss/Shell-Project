@@ -1,15 +1,28 @@
-asd
-pwd
-pwd
-echo
-ls | wc -l | xargs printf "0x%x\n" | cowsay
-ifconfig | grep 192.168
 clear
-ls | wc -l | xargs printf "0x%x\n"
-echo hello there | cowsay
+mkdir a
+rm a
+mkfile aa
+mkfile aa.txt
 clear
-ls | wc -l
-ls | wc -l | xargs printf "0x%x\n"
+cd ..
+cd ..
+cd a
+clear
+pwd
+cd ..
+pwd
+clear
+rm yes
+clear
+ ah
+r
+mkdir hello
+clear
+ls -al fh
+clear
+cst shellHistory
+cat shellHistory
+ | xargs printf "0x%x\n"
 ls | wc -l | xargs printf "0x%x\n"
 wc -l
 ls | wc -l
