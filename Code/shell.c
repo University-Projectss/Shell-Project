@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 
 #define charSize sizeof(char)
@@ -108,7 +109,7 @@ int parseCommand (char *str, char arr[100][512]){
     int i=0;
 
     token = strtok(str, " ");
-    
+
     while(token != NULL ) {
         strcpy(arr[i++], token);
         token = strtok(NULL, " ");
@@ -164,7 +165,7 @@ bool cp (char* inFile, char* outFile){
     /// Citim caracter cu caracter fisierul si il copiem in celalalt
 
     n = read(inF, buf, 1024 * charSize);
-    
+
     while (n > 0){
         write(outF, buf, strlen(buf));
         n = read(inF, buf, 1024 * charSize);
@@ -196,25 +197,46 @@ bool touch(const char* file ){
     return true;
 }
 
+ /// Functia CD pentru schimbarea directorului
+
+void cd(char* f){
+
+    if (chdir(f))
+    {
+        perror("Could not change the directory");
+        exit(0);
+    }
+}
+
+ /// Functie ce imparte comanda in cuvinte pentru a apela exec
+
 void parseCommandForExec(char* str, char** command) {
     char *p = (char *)malloc(strlen(str) * charSize), *tok;
     int i = 1;
     strcpy(p, str);
     tok = strtok(p, " ");
     command[0] = tok;
-    
+
     while(tok != NULL) {
         tok = strtok(NULL, " ");
         command[i++] = tok;
     }
 }
 
+ /// Functie pentru tratarea cazurilor cu pipe (|)
+
 void handlePipe(char *command) {
-    int fd[2], oldPipe = STDIN_FILENO; //0(in) is for reading, 1(out) is for writing
+
+    /// 0 (in) este pentru citire, iar 1 (out) este pentru scriere
+
+    int fd[2], oldPipe = STDIN_FILENO;
     pid_t pid, pidOriginal;
 
-    char *clearPipe[100];   //if you enter 101 commands I gave you 10 lei
+    /// Daca introduci 101 comenzi, iti dau 10 lei
+
+    char *clearPipe[100];
     int n;
+
     for(n = 0; n < 100; n++) {
         clearPipe[n] = strsep(&command, "|");
 
@@ -225,39 +247,51 @@ void handlePipe(char *command) {
     pidOriginal = fork();
 
     if(pidOriginal < 0) {
+
         perror("Something went wrong!");
         exit(0);
+
     } else if(pidOriginal == 0) {
-            for(int i = 0; i < n - 1; i++) {//n - 1 cus the last command will execute in parent
+
+            for(int i = 0; i < n - 1; i++) {
+
+            // Mergem pana la n - 1 deoarece ultima comanda se va executa in parinte
 
             char **commandExec = (char **)malloc(1024 * 1024 * charSize);
             parseCommandForExec(clearPipe[i], commandExec);
 
             if(pipe(fd) < 0) {
-                perror("Could not open the pipe");
+                perror("Could not open the pipe!");
                 exit(0);
             }
 
             pid = fork();
+
             if(pid < 0) {
+
                 perror("Fork error");
                 exit(0);
-            }else if(pid == 0) {
-                //'rotate' the old pipe
+
+            } else if(pid == 0) {
+
+                /// 'Rotim' pipe-ul vechie
+
                 if(oldPipe != STDIN_FILENO) {
                     dup2(oldPipe, STDIN_FILENO);
                     close(oldPipe);
                 }
 
-                //this proccess will write in the current pipe, there's no need to read
+                /// Acest proces va scrie in pipe-ul curent, nu necesita citire
+
                 close(fd[0]);
                 dup2(fd[1], STDOUT_FILENO);
                 close(fd[1]);
 
                 if(execvp(commandExec[0], commandExec) < 0) {
-                    perror("Error runing one of the commands.");
+                    perror("Error runing one of the commands!");
                     exit(0);
                 }
+
             } else {
                 close(oldPipe);
                 close(fd[1]);
@@ -277,37 +311,48 @@ void handlePipe(char *command) {
         parseCommandForExec(clearPipe[n - 1], commandExec);
 
         if(execvp(commandExec[0], commandExec) < 0) {
-            perror("Error runing the last command.");
+            perror("Error runing the last command!");
             exit(0);
         }
     } else {
+
         wait(NULL);
-    }    
+    }
 }
+
+ /// Functie pentru a verifica daca avem cazul unui pipe (|)
 
 bool checkForPipe(char *command) {
     char *p = strstr(command, "|");
     return !(p == NULL);
 }
 
+/// Functie magica ce utilizeaza execvp pentru a trata comenzi precum ls etc.
 
 void unlimitedPower(char command[100][512], int dim) {
+
     char *nameThis[100];
     int j;
+
     for(j = 0; j < dim; j++)
         nameThis[j] = command[j];
+
     nameThis[j] = NULL;
 
     pid_t pid = fork();
+
     if(pid < 0) {
         perror("Fork error sir");
         exit(0);
+
     } else if(pid == 0) {
+
         if(execvp(nameThis[0], nameThis) < 0) {
             perror("Command not found");
             exit(0);
         }
     } else {
+
         wait(NULL);
     }
 }
@@ -317,56 +362,94 @@ void unlimitedPower(char command[100][512], int dim) {
 void allCommands(char *command, int history)
 {
     if (readInput(command, history)) {
+        //Daca avem pipe, apelam functia ce trateaza acest caz, altfel verificam ce comanda avem
+
         if(checkForPipe(command)) {
-            //we have the pipe
             handlePipe(command);
+
         } else {
-            //we don't have pipe
+
             char parsed[100][512];
             int dim = 0;
             dim = parseCommand(command, parsed);
+
             if (strcmp(parsed[0], "clear") == 0) {
                 if (dim != 1){
                     printf("Incorrect command! Check our manual -> MAN\n");
                     man();
                 }
                 else clearCommand();
+
             } else if(strcmp(parsed[0], "history") == 0) {
                 if (dim != 1){
                     printf("Incorrect command! Check our manual -> MAN\n");
                     man();
                 }
                 else showHistory();
+
             } else if (strcmp(parsed[0], "cp") == 0) {
                 if (dim != 3){
                     printf("Incorrect command! Check our manual -> MAN\n");
                     man();
                 }
                 else cp(parsed[1], parsed[2]);
+
             } else if (strcmp(parsed[0], "touch") == 0){
                 if (dim != 2){
                     printf("Incorrect command! Check our manual -> MAN\n");
                     man();
                 }
                 else touch(parsed[1]);
+
             } else if (strcmp(parsed[0], "man") == 0){
                 if (dim != 1){
                     printf("Incorrect command! Check our manual -> MAN\n");
                     man();
                 }
                 else man();
-            }
-            else {
+
+            } else if (strcmp(parsed[0], "cd") == 0){
+                if (dim != 2){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else cd(parsed[1]);
+
+            } else if (strcmp(parsed[0], "quit") == 0){
+                if (dim != 1){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else { printf("\n"); exit(0);}
+
+            } else {
                 unlimitedPower(parsed, dim);
             }
         }
     }
 }
 
+ /// Functie frumoasa
+
+ void welcome()
+{
+	printf("Welcome to Hedgehog Shell!\n\n");
+	printf("  .|||||||||.          .|||||||||.\n");
+	printf(" |||||||||||||        |||||||||||||\n");
+	printf("|||||||||||' .\      /. `|||||||||||\n");
+	printf("`||||||||||_,__o    o__,_||||||||||'\n\n");
+	sleep(2);
+}
+
 int main(int arg, char **argv) {
+
+    clearCommand();
+    welcome();
+
     int history = open("shellHistory", O_RDWR | O_CREAT, S_IRWXU);
-    
+
     char *command = (char *)malloc(512 * charSize);
+
     while (true) {
         printShellLine();
         allCommands(command, history);
