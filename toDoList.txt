@@ -2,18 +2,18 @@ To Do List:
 - Man (check)
 - History (check)
 - Clear (check)
-- Cd
-- Pwd
-- Ls
+- Cd (check)
+- Pwd (check)
+- Ls (check)
 - Touch (check)
-- Rm
+- Rm (check)
 - Cp (check)
-- Mkdir
-- Rmdir
-- Echo
-- Pipe (|)
+- Mkdir (check)
+- Rmdir (check)
+- Echo (check)
+- Pipe (|) (check)
 - Expresii Logice (&& si ||)
-- Quit
+- Quit (check)
 - Selectare comanda (check - adaugare constanta)
 - Parsare comanda (check)
 - Citire comanda (check)
@@ -58,6 +58,7 @@ To Do List:
 
 13. Pipe
 -- functie pentru legatura iesire-intrare
+-- include mai multe functii pentru executie 
 
 14. Expresii logice
 -- functie pentru impplementarea && si ||
@@ -73,6 +74,9 @@ To Do List:
 
 18. Citire comanda
 -- functie ce citeste o comanda
+
+19. Functia magica de rulare a comenzilor
+-- functie ce implementeaza cu exec comenzi precum ls etc.
 
 19. Linie noua terminal
 -- functie ce ne da o noua linie de terminal
