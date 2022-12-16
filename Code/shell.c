@@ -62,11 +62,15 @@
       printf("    Command: cp source_file destination_file\n");
       printf("10. MKDIR: creates a new empty directory\n");
       printf("    Command: mkdir directory_name\n");
-      printf("10. RMDIR: removes a directory\n");
+      printf("11. RMDIR: removes a directory\n");
       printf("    Command: rmdir directory_name\n");
-      printf("11. ECHO: displays the string given as an argument\n");
+      printf("12. ECHO: displays the string given as an argument\n");
       printf("    Command: echo string\n");
-      printf("12. QUIT: exit\n");
+      printf("13. MV: moves a file to a specific destinatoin\n");
+      printf("    Command: mv file_name destination\n");
+      printf("14. DF: display current directory's system disk space usage\n");
+      printf("    Command: df -m\n");
+      printf("15. QUIT: exit\n");
       printf("    Command: quit\n");
   }
 
@@ -274,7 +278,7 @@ void handlePipe(char *command) {
 
             } else if(pid == 0) {
 
-                /// 'Rotim' pipe-ul vechie
+                /// 'Rotim' pipe-ul vechi
 
                 if(oldPipe != STDIN_FILENO) {
                     dup2(oldPipe, STDIN_FILENO);
