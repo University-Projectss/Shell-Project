@@ -62,11 +62,15 @@
       printf("    Command: cp source_file destination_file\n");
       printf("10. MKDIR: creates a new empty directory\n");
       printf("    Command: mkdir directory_name\n");
-      printf("10. RMDIR: removes a directory\n");
+      printf("11. RMDIR: removes a directory\n");
       printf("    Command: rmdir directory_name\n");
-      printf("11. ECHO: displays the string given as an argument\n");
+      printf("12. ECHO: displays the string given as an argument\n");
       printf("    Command: echo string\n");
-      printf("12. QUIT: exit\n");
+      printf("13. MV: moves a file to a specific destinatoin\n");
+      printf("    Command: mv file_name destination\n");
+      printf("14. DF: display current directory's system disk space usage\n");
+      printf("    Command: df -m\n");
+      printf("15. QUIT: exit\n");
       printf("    Command: quit\n");
   }
 
@@ -132,7 +136,7 @@ void clearCommand() {
 void showHistory() {
     char buff[513];
     int n, index = 1;
-    int file = open("shellHistory", O_RDONLY);
+    int file = open("shellHistory.txt", O_RDONLY);
 
     n = read(file, &buff, sizeof(buff));
     char *p = strtok(buff, "\n");
@@ -274,7 +278,7 @@ void handlePipe(char *command) {
 
             } else if(pid == 0) {
 
-                /// 'Rotim' pipe-ul vechie
+                /// 'Rotim' pipe-ul vechi
 
                 if(oldPipe != STDIN_FILENO) {
                     dup2(oldPipe, STDIN_FILENO);
@@ -436,7 +440,7 @@ void allCommands(char *command, int history)
 	printf("Welcome to Hedgehog Shell!\n\n");
 	printf("  .|||||||||.          .|||||||||.\n");
 	printf(" |||||||||||||        |||||||||||||\n");
-	printf("|||||||||||' .\      /. `|||||||||||\n");
+	printf("|||||||||||' .\\      /. `|||||||||||\n");
 	printf("`||||||||||_,__o    o__,_||||||||||'\n\n");
 	sleep(2);
 }
@@ -446,7 +450,7 @@ int main(int arg, char **argv) {
     clearCommand();
     welcome();
 
-    int history = open("shellHistory", O_RDWR | O_CREAT, S_IRWXU);
+    int history = open("shellHistory.txt", O_RDWR | O_CREAT, S_IRWXU);
 
     char *command = (char *)malloc(512 * charSize);
 
