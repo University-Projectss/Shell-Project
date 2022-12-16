@@ -136,7 +136,7 @@ void clearCommand() {
 void showHistory() {
     char buff[513];
     int n, index = 1;
-    int file = open("shellHistory", O_RDONLY);
+    int file = open("shellHistory.txt", O_RDONLY);
 
     n = read(file, &buff, sizeof(buff));
     char *p = strtok(buff, "\n");
@@ -440,7 +440,7 @@ void allCommands(char *command, int history)
 	printf("Welcome to Hedgehog Shell!\n\n");
 	printf("  .|||||||||.          .|||||||||.\n");
 	printf(" |||||||||||||        |||||||||||||\n");
-	printf("|||||||||||' .\      /. `|||||||||||\n");
+	printf("|||||||||||' .\\      /. `|||||||||||\n");
 	printf("`||||||||||_,__o    o__,_||||||||||'\n\n");
 	sleep(2);
 }
@@ -450,7 +450,7 @@ int main(int arg, char **argv) {
     clearCommand();
     welcome();
 
-    int history = open("shellHistory", O_RDWR | O_CREAT, S_IRWXU);
+    int history = open("shellHistory.txt", O_RDWR | O_CREAT, S_IRWXU);
 
     char *command = (char *)malloc(512 * charSize);
 
