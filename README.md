@@ -5,13 +5,12 @@ Creating a Shell in C.
 ### Irina Enescu:
 - man
 - parse command 
-- cp 
 - cd
 - all commands 
 - welcome
 - code formatting
 ### Bogdan Putinelu:
-- touch 
+
 ### Robert Udrea:
 - print shell line
 - read input
