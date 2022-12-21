@@ -1,0 +1,8 @@
+clear
+cd ..
+cd ..
+clear
+cd Shell-Project
+cd Code
+clear
+ls

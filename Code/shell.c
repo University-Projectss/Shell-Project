@@ -8,35 +8,14 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <readline/history.h>
+#include <readline/readline.h>
 
 #define charSize sizeof(char)
 #define intSize sizeof(int)
 #define longSize sizeof(long)
 
 #define maxSizeCommand 1000
-
- /// Functie pentru conversia unui String in Int
-
- int ourAtoi(const char ourString[]) {
-     int number = 0;
-     int i = 0;
-     int sign = 1;
-
-     while (ourString[i] == ' ' || ourString[i] == '\n' || ourString[i] == '\t') i++;
-
-     if (ourString[i] == '+' || ourString[i] == '-')
-         if (ourString[i] == '-')
-             sign = -1;
-
-     i++;
-
-     while (ourString[i] && (ourString[i] >= '0' && ourString[i] <= '9')) {
-         number = number * 10 + (ourString[i] - '0');
-         i++;
-     }
-
-     return sign * number;
- }
 
   /// Functia MAN ce ofera un manual de utilizare al shell-ului
 
@@ -79,22 +58,25 @@
 void printShellLine() {
     char *path = (char *)malloc(512 * charSize);
     getcwd(path, 500);
-    printf("%s ~ >> ", path);
+    printf("%s", path);
 }
 
  /// Functie ce citeste comanda introdusa
 
 bool readInput(char *command, int file) {
     char *buff = (char *)malloc(strlen(command) * charSize);
-    fgets(buff, 512, stdin);
-
+    // fgets(buff, 512, stdin);
+    buff = readline("\n~ >> ");
+    
     /// Daca nu avem o comanda, nu avem ce afisa
 
     if (strcmp(buff, "\n") == 0)
         return false;
 
-    buff[strlen(buff) - 1] = '\0';
+    add_history(buff);
+    //buff[strlen(buff) - 1] = '\0';
     strcpy(command, buff);
+    strcpy(buff, "");
 
     int n = write(file, command, strlen(command));
     int m = write(file, "\n", sizeof(char));
@@ -125,8 +107,8 @@ int parseCommand (char *str, char arr[100][512]){
 
 void clearCommand() {
 
-    /// Pe Mac avem clear
-    /// Pe Linux si Windows avem cls
+    /// Pe Mac/Linux avem clear
+    /// Pe Windows avem cls
 
     system("clear");
 }
@@ -146,60 +128,6 @@ void showHistory() {
     }
 }
 
- /// Functia CP pentru copierea unui fisier in altul
-
-bool cp (char* inFile, char* outFile){
-    int n, inF, outF;
-    char* buf = (char *)malloc(1024 * charSize);
-
-    /// Daca nu putem deschide fisierele, returnam o eroare
-
-    inF = open(inFile, O_RDONLY);
-    if (inF < 0){
-        perror("Could not open the in file");
-        return errno;
-    }
-
-    outF = open(outFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
-    if (outF < 0){
-        perror("Could not open the out file");
-        return errno;
-    }
-
-    /// Citim caracter cu caracter fisierul si il copiem in celalalt
-
-    n = read(inF, buf, 1024 * charSize);
-
-    while (n > 0){
-        write(outF, buf, strlen(buf));
-        n = read(inF, buf, 1024 * charSize);
-    }
-
-    return true;
-}
-
- /// Functia TOUCH pentru crearea unui fisier
-
-bool touch(const char* file ){
-    /// In file avem numele fisierului (+ extensie) pe care il vom crea
-
-    // In success este returnat un file descriptor la fisierul creat:
-    // - punem flag-ul O_CREAT pentru a crea fisierul
-    // - flag-urile S_IRWXU, S_IRWXG, S_IRWXO sunt pentru a da permisiuni de citire, scriere si executare user-ilor, grupurilor si others
-
-    int success = open(file, O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
-
-    // Success va avea valoarea -1 doar daca a avut loc o eroare la crearea file descriptor-ului
-
-    if(success == -1)
-        return false;
-
-    // Inchidem file descriptor-ul
-
-    close(success);
-
-    return true;
-}
 
  /// Functia CD pentru schimbarea directorului
 
@@ -390,20 +318,6 @@ void allCommands(char *command, int history)
                     man();
                 }
                 else showHistory();
-
-            } else if (strcmp(parsed[0], "cp") == 0) {
-                if (dim != 3){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else cp(parsed[1], parsed[2]);
-
-            } else if (strcmp(parsed[0], "touch") == 0){
-                if (dim != 2){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else touch(parsed[1]);
 
             } else if (strcmp(parsed[0], "man") == 0){
                 if (dim != 1){
