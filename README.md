@@ -9,13 +9,16 @@ Creating a Shell in C.
 - all commands 
 - welcome
 - code formatting
+- logical expressions
+
 ### Bogdan Putinelu:
+- suspending a program
 
 ### Robert Udrea:
 - print shell line
 - read input
 - clear
-- history
+- history / recover history
 - pipe
 - unlimited power
 
@@ -27,14 +30,15 @@ Creating a Shell in C.
 
 3. Run the following commands:
 ```sh
-gcc shell.c -o shell
+gcc shell.c -o shell -lreadline
 ./shell
 ```
-- If you don't have the GCC compiler installed, run the following commands in the terminal:
+- If you don't have the GCC or the Readline library compiler installed, run the following commands in the terminal:
 ```sh
 sudo apt update
 sudo apt install build-essential
 sudo apt install gcc
+sudo apt-get install libreadline-dev
 ```
 - To validate that the GCC compiler is successfully installed, run the following command in the terminal:
 ```sh
