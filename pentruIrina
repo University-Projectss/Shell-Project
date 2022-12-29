@@ -291,9 +291,9 @@ int unlimitedPower(char command[100][512], int dim) {
     char *nameThis[100];
     int j;
  
-    for(j = 0; j < dim; j++)
+    for(j = 0; j < dim; j++) {
         nameThis[j] = command[j];
- 
+    }
     nameThis[j] = NULL;
  
     pid_t pid = fork();
@@ -303,15 +303,18 @@ int unlimitedPower(char command[100][512], int dim) {
         exit(0);
  
     } else if(pid == 0) {
- 
         if(execvp(nameThis[0], nameThis) < 0) {
             perror("Command not found");
-            return 13;
-            exit(0);
+            
+            exit(errno);
         }
     } else {
- 
-        wait(NULL);
+        int status;
+        wait(&status);
+
+        if(WIFEXITED(status)){
+            return 1;
+        }
     }
 }
  
@@ -322,22 +325,22 @@ void handleOr(char *command){
     char *clearComm[100];
  
     int i;
- 
     for(i=0; i<100; i++){
     	clearComm[i] = strsep(&command, "||");
- 
     	if (clearComm[i] == NULL)
     		break;
     }
+
  
     for (int j=0; j<i; j++) {
  
             char parsed[100][512];
             int dim = 0;
             dim = parseCommand(clearComm[j], parsed);
-            printf("%d", dim);
+            //printf("%d", dim);
  
-            if (strcmp(parsed[0], "clear") == 0) {
+            if(dim) {
+                if (strcmp(parsed[0], "clear") == 0) {
                 if (dim != 1){
                     continue;
                 } 
@@ -368,8 +371,10 @@ void handleOr(char *command){
                 else {printf("\n"); exit(0); return;}
  
             } else {
-                {if (unlimitedPower(parsed, dim) == 13) continue; else return;}
-            }        
+                int val = unlimitedPower(parsed, dim);
+                if (val == 1) continue; else return;
+            }    
+            }    
     }  
  
 }
