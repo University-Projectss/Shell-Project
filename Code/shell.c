@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <signal.h>
 
 #define charSize sizeof(char)
 #define intSize sizeof(int)
@@ -113,6 +114,16 @@ void clearCommand() {
     system("clear");
 }
 
+/// Functie ce gestioneaza suspendarea unui program (CTRL + C)
+
+void ctrlchandler(){
+
+    /// Setam pentru urmatorul semnal de intrerupere sa il gestioneze tot ctrlchandler
+
+    signal(SIGINT, ctrlchandler);
+    printf("\n");
+}
+
 /// Functie ce afiseaza istoricul comenzilor
 
 void showHistory() {
@@ -127,7 +138,6 @@ void showHistory() {
         p = strtok(NULL, "\n");
     }
 }
-
 
 /// Functia CD pentru schimbarea directorului
 
@@ -273,17 +283,31 @@ bool checkForAnd (char *command) {
     return !(p == NULL);
 }
 
+/// Functie ce verifica daca sunt mai multe comenzi
+
+bool checkForSemicolon(char *command){
+    char *p = strstr(command, ";");
+    return !(p == NULL);
+}
+
 /// Functie magica ce utilizeaza execvp pentru a trata comenzi precum ls etc.
 
 int unlimitedPower(char command[100][512], int dim) {
 
     char *nameThis[100];
     int j;
+    bool isBackground = false;
 
     for(j = 0; j < dim; j++) {
         nameThis[j] = command[j];
     }
-    nameThis[j] = NULL;
+
+    if(strcmp(nameThis[j-1],"&")==0){
+        nameThis[j-1] = NULL;
+        isBackground=true;
+    }
+    else
+        nameThis[j] = NULL;
 
     pid_t pid = fork();
 
@@ -294,15 +318,19 @@ int unlimitedPower(char command[100][512], int dim) {
     } else if(pid == 0) {
         if(execvp(nameThis[0], nameThis) < 0) {
             perror("Command not found");
-
-            exit(errno);
+            exit(0);
         }
     } else {
-        int status;
-        wait(&status);
 
-        if(WIFEXITED(status)){
-            return 13;
+        /// Asteptam terminarea procesului copil doar daca acesta nu este un proces de background
+
+        if(isBackground==false) {
+            int status;
+            wait(&status);
+
+            if (WIFEXITED(status)) {
+                return 13;
+            }
         }
     }
 }
@@ -427,6 +455,64 @@ void handleAnd(char *command){
 
 }
 
+/// Functie pentru tratarea cazurilor cu ;
+
+void handleSemicolon (char* command) {
+    char *p = strtok(command, ";");
+    char commands[100][256];
+    int i=0;
+
+    while (p){
+        strcpy(commands[i++],p);
+        p= strtok(NULL,";");
+    }
+
+    for(int j=0;j<i;j++){
+        char parsed[100][512];
+        int dim = 0;
+        dim = parseCommand(commands[j], parsed);
+
+        if (strcmp(parsed[0], "clear") == 0) {
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else clearCommand();
+
+        } else if(strcmp(parsed[0], "history") == 0) {
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else showHistory();
+
+        } else if (strcmp(parsed[0], "man") == 0){
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else man();
+
+        } else if (strcmp(parsed[0], "cd") == 0){
+            if (dim != 2){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else cd(parsed[1]);
+
+        } else if (strcmp(parsed[0], "quit") == 0){
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else { printf("\n"); exit(0);}
+
+        } else {
+            unlimitedPower(parsed, dim);
+        }
+    }
+}
+
 /// Functie ce decide ce comanda va fi executata la fiecare instructiune
 
 void allCommands(char *command, int history)
@@ -444,49 +530,51 @@ void allCommands(char *command, int history)
         } else if(checkForAnd(command)) {
             handleAnd(command);
 
+        } else if (checkForSemicolon(command)) {
+            handleSemicolon(command);
         } else {
+                char parsed[100][512];
+                int dim = 0;
+                dim = parseCommand(command, parsed);
 
-            char parsed[100][512];
-            int dim = 0;
-            dim = parseCommand(command, parsed);
+                if (strcmp(parsed[0], "clear") == 0) {
+                    if (dim != 1){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else clearCommand();
 
-            if (strcmp(parsed[0], "clear") == 0) {
-                if (dim != 1){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
+                } else if(strcmp(parsed[0], "history") == 0) {
+                    if (dim != 1){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else showHistory();
+
+                } else if (strcmp(parsed[0], "man") == 0){
+                    if (dim != 1){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else man();
+
+                } else if (strcmp(parsed[0], "cd") == 0){
+                    if (dim != 2){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else cd(parsed[1]);
+
+                } else if (strcmp(parsed[0], "quit") == 0){
+                    if (dim != 1){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else { printf("\n"); exit(0);}
+
+                } else {
+                    unlimitedPower(parsed, dim);
                 }
-                else clearCommand();
-
-            } else if(strcmp(parsed[0], "history") == 0) {
-                if (dim != 1){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else showHistory();
-
-            } else if (strcmp(parsed[0], "man") == 0){
-                if (dim != 1){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else man();
-
-            } else if (strcmp(parsed[0], "cd") == 0){
-                if (dim != 2){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else cd(parsed[1]);
-
-            } else if (strcmp(parsed[0], "quit") == 0){
-                if (dim != 1){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else { printf("\n"); exit(0);}
-
-            } else {
-                unlimitedPower(parsed, dim);
             }
         }
     }
@@ -505,6 +593,8 @@ void welcome()
 }
 
 int main(int arg, char **argv) {
+
+    signal(SIGINT, ctrlchandler);
 
     clearCommand();
     welcome();
