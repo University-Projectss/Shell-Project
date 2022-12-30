@@ -283,7 +283,7 @@ bool checkForAnd (char *command) {
     return !(p == NULL);
 }
 
-/// Functie ce verifica daca sunt mai multe comenzi
+/// Functie ce verifica daca sunt mai multe comenzi (;)
 
 bool checkForSemicolon(char *command){
     char *p = strstr(command, ";");
