@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <signal.h>
 
 #define charSize sizeof(char)
 #define intSize sizeof(int)
@@ -17,43 +18,43 @@
 
 #define maxSizeCommand 1000
 
-  /// Functia MAN ce ofera un manual de utilizare al shell-ului
+/// Functia MAN ce ofera un manual de utilizare al shell-ului
 
-  void man(){
-      printf("MANUAL\n");
-      printf("01. MAN: shows all the commands\n");
-      printf("    Command: man\n");
-      printf("02. HISTORY: shows all the commands that ran in the current session\n");
-      printf("    Command: history\n");
-      printf("03. CLEAR: clears the terminal\n");
-      printf("    Command: clear\n");
-      printf("04. PWD: prints the path of the current directory\n");
-      printf("    Command: pwd\n");
-      printf("05. LS: lists all files and directories of the current directory\n");
-      printf("    Command: ls\n");
-      printf("06. CD: changes the current directory\n");
-      printf("    Command: cd new_path\n");
-      printf("07. TOUCH: creates a new empty file\n");
-      printf("    Command: touch file_name\n");
-      printf("08. RM: removes a file\n");
-      printf("    Command: rm file_name\n");
-      printf("09. CP: copies the content of a file (first file in the command) to another file (second file in the command)\n");
-      printf("    Command: cp source_file destination_file\n");
-      printf("10. MKDIR: creates a new empty directory\n");
-      printf("    Command: mkdir directory_name\n");
-      printf("11. RMDIR: removes a directory\n");
-      printf("    Command: rmdir directory_name\n");
-      printf("12. ECHO: displays the string given as an argument\n");
-      printf("    Command: echo string\n");
-      printf("13. MV: moves a file to a specific destinatoin\n");
-      printf("    Command: mv file_name destination\n");
-      printf("14. DF: display current directory's system disk space usage\n");
-      printf("    Command: df -m\n");
-      printf("15. QUIT: exit\n");
-      printf("    Command: quit\n");
-  }
+void man(){
+    printf("MANUAL\n");
+    printf("01. MAN: shows all the commands\n");
+    printf("    Command: man\n");
+    printf("02. HISTORY: shows all the commands that ran in the current session\n");
+    printf("    Command: history\n");
+    printf("03. CLEAR: clears the terminal\n");
+    printf("    Command: clear\n");
+    printf("04. PWD: prints the path of the current directory\n");
+    printf("    Command: pwd\n");
+    printf("05. LS: lists all files and directories of the current directory\n");
+    printf("    Command: ls\n");
+    printf("06. CD: changes the current directory\n");
+    printf("    Command: cd new_path\n");
+    printf("07. TOUCH: creates a new empty file\n");
+    printf("    Command: touch file_name\n");
+    printf("08. RM: removes a file\n");
+    printf("    Command: rm file_name\n");
+    printf("09. CP: copies the content of a file (first file in the command) to another file (second file in the command)\n");
+    printf("    Command: cp source_file destination_file\n");
+    printf("10. MKDIR: creates a new empty directory\n");
+    printf("    Command: mkdir directory_name\n");
+    printf("11. RMDIR: removes a directory\n");
+    printf("    Command: rmdir directory_name\n");
+    printf("12. ECHO: displays the string given as an argument\n");
+    printf("    Command: echo string\n");
+    printf("13. MV: moves a file to a specific destinatoin\n");
+    printf("    Command: mv file_name destination\n");
+    printf("14. DF: display current directory's system disk space usage\n");
+    printf("    Command: df -m\n");
+    printf("15. QUIT: exit\n");
+    printf("    Command: quit\n");
+}
 
- /// Functie ce genereaza o noua linie in Shell
+/// Functie ce genereaza o noua linie in Shell
 
 void printShellLine() {
     char *path = (char *)malloc(512 * charSize);
@@ -61,20 +62,20 @@ void printShellLine() {
     printf("%s", path);
 }
 
- /// Functie ce citeste comanda introdusa
+/// Functie ce citeste comanda introdusa
 
 bool readInput(char *command, int file) {
     char *buff = (char *)malloc(strlen(command) * charSize);
-    // fgets(buff, 512, stdin);
+
     buff = readline("\n~ >> ");
-    
+
     /// Daca nu avem o comanda, nu avem ce afisa
 
     if (strcmp(buff, "\n") == 0)
         return false;
 
     add_history(buff);
-    //buff[strlen(buff) - 1] = '\0';
+
     strcpy(command, buff);
     strcpy(buff, "");
 
@@ -88,7 +89,7 @@ bool readInput(char *command, int file) {
     return true;
 }
 
- /// Functie ce imparte comanda in cuvinte
+/// Functie ce imparte comanda in cuvinte
 
 int parseCommand (char *str, char arr[100][512]){
     char *token;
@@ -103,7 +104,7 @@ int parseCommand (char *str, char arr[100][512]){
     return i;
 }
 
- /// Functia CLEAR ce elibereaza Shell-ul
+/// Functia CLEAR ce elibereaza Shell-ul
 
 void clearCommand() {
 
@@ -113,7 +114,17 @@ void clearCommand() {
     system("clear");
 }
 
- /// Functie ce afiseaza istoricul comenzilor
+/// Functie ce gestioneaza suspendarea unui program (CTRL + C)
+
+void ctrlchandler(){
+
+    /// Setam pentru urmatorul semnal de intrerupere sa il gestioneze tot ctrlchandler
+
+    signal(SIGINT, ctrlchandler);
+    printf("\n");
+}
+
+/// Functie ce afiseaza istoricul comenzilor
 
 void showHistory() {
     char buff[513];
@@ -128,8 +139,7 @@ void showHistory() {
     }
 }
 
-
- /// Functia CD pentru schimbarea directorului
+/// Functia CD pentru schimbarea directorului
 
 void cd(char* f){
 
@@ -140,7 +150,7 @@ void cd(char* f){
     }
 }
 
- /// Functie ce imparte comanda in cuvinte pentru a apela exec
+/// Functie ce imparte comanda in cuvinte pentru a apela exec
 
 void parseCommandForExec(char* str, char** command) {
     char *p = (char *)malloc(strlen(str) * charSize), *tok;
@@ -155,7 +165,7 @@ void parseCommandForExec(char* str, char** command) {
     }
 }
 
- /// Functie pentru tratarea cazurilor cu pipe (|)
+/// Functie pentru tratarea cazurilor cu pipe (|)
 
 void handlePipe(char *command) {
 
@@ -185,7 +195,7 @@ void handlePipe(char *command) {
 
     } else if(pidOriginal == 0) {
 
-            for(int i = 0; i < n - 1; i++) {
+        for(int i = 0; i < n - 1; i++) {
 
             // Mergem pana la n - 1 deoarece ultima comanda se va executa in parinte
 
@@ -252,24 +262,52 @@ void handlePipe(char *command) {
     }
 }
 
- /// Functie pentru a verifica daca avem cazul unui pipe (|)
+/// Functie pentru a verifica daca avem cazul unui pipe (|)
 
 bool checkForPipe(char *command) {
     char *p = strstr(command, "|");
     return !(p == NULL);
 }
 
+/// Functie pentru a verifica daca avem cazul ||
+
+bool checkForOr (char *command) {
+    char *p = strstr(command, "||");
+    return !(p == NULL);
+}
+
+/// Functie pentru a verifica daca avem cazul &&
+
+bool checkForAnd (char *command) {
+    char *p = strstr(command, "&&");
+    return !(p == NULL);
+}
+
+/// Functie ce verifica daca sunt mai multe comenzi (;)
+
+bool checkForSemicolon(char *command){
+    char *p = strstr(command, ";");
+    return !(p == NULL);
+}
+
 /// Functie magica ce utilizeaza execvp pentru a trata comenzi precum ls etc.
 
-void unlimitedPower(char command[100][512], int dim) {
+int unlimitedPower(char command[100][512], int dim) {
 
     char *nameThis[100];
     int j;
+    bool isBackground = false;
 
-    for(j = 0; j < dim; j++)
+    for(j = 0; j < dim; j++) {
         nameThis[j] = command[j];
+    }
 
-    nameThis[j] = NULL;
+    if(strcmp(nameThis[j-1],"&")==0){
+        nameThis[j-1] = NULL;
+        isBackground=true;
+    }
+    else
+        nameThis[j] = NULL;
 
     pid_t pid = fork();
 
@@ -278,88 +316,285 @@ void unlimitedPower(char command[100][512], int dim) {
         exit(0);
 
     } else if(pid == 0) {
-
         if(execvp(nameThis[0], nameThis) < 0) {
             perror("Command not found");
             exit(0);
         }
     } else {
 
-        wait(NULL);
-    }
-}
+        /// Asteptam terminarea procesului copil doar daca acesta nu este un proces de background
 
- /// Functie ce decide ce comanda va fi executata la fiecare instructiune
-
-void allCommands(char *command, int history)
-{
-    if (readInput(command, history)) {
-        //Daca avem pipe, apelam functia ce trateaza acest caz, altfel verificam ce comanda avem
-
-        if(checkForPipe(command)) {
-            handlePipe(command);
-
-        } else {
-
-            char parsed[100][512];
-            int dim = 0;
-            dim = parseCommand(command, parsed);
-
-            if (strcmp(parsed[0], "clear") == 0) {
-                if (dim != 1){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else clearCommand();
-
-            } else if(strcmp(parsed[0], "history") == 0) {
-                if (dim != 1){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else showHistory();
-
-            } else if (strcmp(parsed[0], "man") == 0){
-                if (dim != 1){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else man();
-
-            } else if (strcmp(parsed[0], "cd") == 0){
-                if (dim != 2){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else cd(parsed[1]);
-
-            } else if (strcmp(parsed[0], "quit") == 0){
-                if (dim != 1){
-                    printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
-                }
-                else { printf("\n"); exit(0);}
-
-            } else {
-                unlimitedPower(parsed, dim);
+        if(isBackground==false) {
+            int status;
+            wait(&status);
+            
+            if (status != 0) {
+                return 13;
             }
         }
     }
 }
 
- /// Functie frumoasa
+/// Functie pentru tratarea cazurilor cu ||
 
- void welcome()
+void handleOr(char *command){
+
+    char *clearComm[100];
+
+    int i;
+
+    for(i=0; i<100; i++){
+        clearComm[i] = strsep(&command, "||");
+        if (clearComm[i] == NULL)
+            break;
+    }
+
+    for (int j=0; j<i; j++) {
+
+        char parsed[100][512];
+        int dim = 0;
+        dim = parseCommand(clearComm[j], parsed);
+
+        if(dim) {
+            if (strcmp(parsed[0], "clear") == 0) {
+                if (dim != 1){
+                    continue;
+                }
+                else {clearCommand(); return;}
+
+            } else if(strcmp(parsed[0], "history") == 0) {
+                if (dim != 1){
+                    continue;
+                }
+                else {showHistory(); return;}
+
+            } else if (strcmp(parsed[0], "man") == 0){
+                if (dim != 1){
+                    continue;
+                }
+                else {man(); return;}
+
+            } else if (strcmp(parsed[0], "cd") == 0){
+                if (dim != 2){
+                    continue;
+                }
+                else {cd(parsed[1]); return;}
+
+            } else if (strcmp(parsed[0], "quit") == 0){
+                if (dim != 1){
+                    continue;
+                }
+                else {printf("\n"); exit(0); return;}
+
+            } else {
+                int val = unlimitedPower(parsed, dim);
+                if (val == 13) continue; else return;
+            }
+        }
+    }
+
+}
+
+/// Functie pentru tratarea cazurilor cu &&
+
+void handleAnd(char *command){
+
+    char *clearComm[100];
+
+    int i;
+
+    for(i=0; i<100; i++){
+        clearComm[i] = strsep(&command, "&&");
+        if (clearComm[i] == NULL)
+            break;
+    }
+
+    for (int j=0; j<i; j++) {
+
+        char parsed[100][512];
+        int dim = 0;
+        dim = parseCommand(clearComm[j], parsed);
+
+        if(dim) {
+            if (strcmp(parsed[0], "clear") == 0) {
+                if (dim != 1){
+                    return;
+                }
+                else {clearCommand(); continue;}
+
+            } else if(strcmp(parsed[0], "history") == 0) {
+                if (dim != 1){
+                    return;
+                }
+                else {showHistory(); continue;}
+
+            } else if (strcmp(parsed[0], "man") == 0){
+                if (dim != 1){
+                    return;
+                }
+                else {man(); continue;}
+
+            } else if (strcmp(parsed[0], "cd") == 0){
+                if (dim != 2){
+                    return;
+                }
+                else {cd(parsed[1]); continue;}
+
+            } else if (strcmp(parsed[0], "quit") == 0){
+                if (dim != 1){
+                    return;
+                }
+                else {printf("\n"); exit(0); continue;}
+
+            } else {
+                int val = unlimitedPower(parsed, dim);
+                if (val == 13) return; else continue;
+            }
+        }
+    }
+
+}
+
+/// Functie pentru tratarea cazurilor cu ;
+
+void handleSemicolon (char* command) {
+    char *p = strtok(command, ";");
+    char commands[100][256];
+    int i=0;
+
+    while (p){
+        strcpy(commands[i++],p);
+        p= strtok(NULL,";");
+    }
+
+    for(int j=0;j<i;j++){
+        char parsed[100][512];
+        int dim = 0;
+        dim = parseCommand(commands[j], parsed);
+
+        if (strcmp(parsed[0], "clear") == 0) {
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else clearCommand();
+
+        } else if(strcmp(parsed[0], "history") == 0) {
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else showHistory();
+
+        } else if (strcmp(parsed[0], "man") == 0){
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else man();
+
+        } else if (strcmp(parsed[0], "cd") == 0){
+            if (dim != 2){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else cd(parsed[1]);
+
+        } else if (strcmp(parsed[0], "quit") == 0){
+            if (dim != 1){
+                printf("Incorrect command! Check our manual -> MAN\n");
+                man();
+            }
+            else { printf("\n"); exit(0);}
+
+        } else {
+            unlimitedPower(parsed, dim);
+        }
+    }
+}
+
+/// Functie ce decide ce comanda va fi executata la fiecare instructiune
+
+void allCommands(char *command, int history)
 {
-	printf("Welcome to Hedgehog Shell!\n\n");
-	printf("  .|||||||||.          .|||||||||.\n");
-	printf(" |||||||||||||        |||||||||||||\n");
-	printf("|||||||||||' .\\      /. `|||||||||||\n");
-	printf("`||||||||||_,__o    o__,_||||||||||'\n\n");
-	sleep(2);
+    if (readInput(command, history)) {
+
+        //Daca avem pipe, apelam functia ce trateaza acest caz, altfel verificam ce comanda avem
+
+        if(checkForOr(command)) {
+            handleOr(command);
+
+        } else if(checkForPipe(command)) {
+            handlePipe(command);
+
+        } else if(checkForAnd(command)) {
+            handleAnd(command);
+
+        } else if (checkForSemicolon(command)) {
+            handleSemicolon(command);
+        } else {
+                char parsed[100][512];
+                int dim = 0;
+                dim = parseCommand(command, parsed);
+
+                if (strcmp(parsed[0], "clear") == 0) {
+                    if (dim != 1){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else clearCommand();
+
+                } else if(strcmp(parsed[0], "history") == 0) {
+                    if (dim != 1){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else showHistory();
+
+                } else if (strcmp(parsed[0], "man") == 0){
+                    if (dim != 1){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else man();
+
+                } else if (strcmp(parsed[0], "cd") == 0){
+                    if (dim != 2){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else cd(parsed[1]);
+
+                } else if (strcmp(parsed[0], "quit") == 0){
+                    if (dim != 1){
+                        printf("Incorrect command! Check our manual -> MAN\n");
+                        man();
+                    }
+                    else { printf("\n"); exit(0);}
+
+                } else {
+                    unlimitedPower(parsed, dim);
+                }
+            }
+        }
+}
+
+
+/// Functie frumoasa
+
+void welcome()
+{
+    printf("Welcome to Hedgehog Shell!\n\n");
+    printf("  .|||||||||.          .|||||||||.\n");
+    printf(" |||||||||||||        |||||||||||||\n");
+    printf("|||||||||||' .\\      /. `|||||||||||\n");
+    printf("`||||||||||_,__o    o__,_||||||||||'\n\n");
+    sleep(2);
 }
 
 int main(int arg, char **argv) {
+
+    signal(SIGINT, ctrlchandler);
 
     clearCommand();
     welcome();
