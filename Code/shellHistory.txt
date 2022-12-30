@@ -1,8 +1,6 @@
-clear
-cd ..
-cd ..
-clear
-cd Shell-Project
-cd Code
-clear
-ls
+rm a || touch b
+rm b || touch a
+touch a || touch b
+rm a && touch b
+rm b
+quit

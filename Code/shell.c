@@ -327,8 +327,8 @@ int unlimitedPower(char command[100][512], int dim) {
         if(isBackground==false) {
             int status;
             wait(&status);
-
-            if (WIFEXITED(status)) {
+            
+            if (status != 0) {
                 return 13;
             }
         }
@@ -577,8 +577,8 @@ void allCommands(char *command, int history)
                 }
             }
         }
-    }
 }
+
 
 /// Functie frumoasa
 
