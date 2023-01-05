@@ -13,6 +13,10 @@ Creating a Shell in C.
 
 ### Bogdan Putinelu:
 - suspending a program
+- executing a job in the background (&)
+- chaining commands with semi-colon (;)
+- added the functionality of using logical operators together (ex. cmd1 && cmd2 || cmd3)
+- added the functionality of semi-colon inside logical expressions (&&, ||)
 
 ### Robert Udrea:
 - print shell line
