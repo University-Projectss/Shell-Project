@@ -3,13 +3,13 @@ Creating a Shell in C.
 
 # Team members and contributions:
 ### Irina Enescu:
-- man
-- parse command 
-- cd
-- all commands 
-- welcome
+- added the manual with all the shell commands
+- command parsing 
+- changing the current directory
+- a shell menu that decides which command will be executed
+- shell interface 
 - code formatting
-- logical expressions
+- added the functionality of using logical operators (&&) and (||)
 
 ### Bogdan Putinelu:
 - suspending a program
@@ -19,12 +19,12 @@ Creating a Shell in C.
 - added the functionality of semi-colon inside logical expressions (&&, ||)
 
 ### Robert Udrea:
-- print shell line
-- read input
-- clear
-- history / recover history
-- pipe
-- unlimited power
+- display a new line in shell
+- reading input from the keyboard
+- clear command 
+- arrow navigation in history or display history
+- added the functionality of using pipe
+- unlimited power function which executes classic commands
 
 # How to use this masterpiece
 > The program runs correctly on Linux or MAC.
