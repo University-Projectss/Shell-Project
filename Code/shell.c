@@ -326,8 +326,8 @@ int unlimitedPower(char command[100][512], int dim) {
 
         if(isBackground==false) {
             int status;
-            wait(&status);
-            
+            waitpid(pid,&status,0);
+
             if (status != 0) {
                 return 13;
             }
@@ -335,132 +335,12 @@ int unlimitedPower(char command[100][512], int dim) {
     }
 }
 
-/// Functie pentru tratarea cazurilor cu ||
-
-void handleOr(char *command){
-
-    char *clearComm[100];
-
-    int i;
-
-    for(i=0; i<100; i++){
-        clearComm[i] = strsep(&command, "||");
-        if (clearComm[i] == NULL)
-            break;
-    }
-
-    for (int j=0; j<i; j++) {
-
-        char parsed[100][512];
-        int dim = 0;
-        dim = parseCommand(clearComm[j], parsed);
-
-        if(dim) {
-            if (strcmp(parsed[0], "clear") == 0) {
-                if (dim != 1){
-                    continue;
-                }
-                else {clearCommand(); return;}
-
-            } else if(strcmp(parsed[0], "history") == 0) {
-                if (dim != 1){
-                    continue;
-                }
-                else {showHistory(); return;}
-
-            } else if (strcmp(parsed[0], "man") == 0){
-                if (dim != 1){
-                    continue;
-                }
-                else {man(); return;}
-
-            } else if (strcmp(parsed[0], "cd") == 0){
-                if (dim != 2){
-                    continue;
-                }
-                else {cd(parsed[1]); return;}
-
-            } else if (strcmp(parsed[0], "quit") == 0){
-                if (dim != 1){
-                    continue;
-                }
-                else {printf("\n"); exit(0); return;}
-
-            } else {
-                int val = unlimitedPower(parsed, dim);
-                if (val == 13) continue; else return;
-            }
-        }
-    }
-
-}
-
-/// Functie pentru tratarea cazurilor cu &&
-
-void handleAnd(char *command){
-
-    char *clearComm[100];
-
-    int i;
-
-    for(i=0; i<100; i++){
-        clearComm[i] = strsep(&command, "&&");
-        if (clearComm[i] == NULL)
-            break;
-    }
-
-    for (int j=0; j<i; j++) {
-
-        char parsed[100][512];
-        int dim = 0;
-        dim = parseCommand(clearComm[j], parsed);
-
-        if(dim) {
-            if (strcmp(parsed[0], "clear") == 0) {
-                if (dim != 1){
-                    return;
-                }
-                else {clearCommand(); continue;}
-
-            } else if(strcmp(parsed[0], "history") == 0) {
-                if (dim != 1){
-                    return;
-                }
-                else {showHistory(); continue;}
-
-            } else if (strcmp(parsed[0], "man") == 0){
-                if (dim != 1){
-                    return;
-                }
-                else {man(); continue;}
-
-            } else if (strcmp(parsed[0], "cd") == 0){
-                if (dim != 2){
-                    return;
-                }
-                else {cd(parsed[1]); continue;}
-
-            } else if (strcmp(parsed[0], "quit") == 0){
-                if (dim != 1){
-                    return;
-                }
-                else {printf("\n"); exit(0); continue;}
-
-            } else {
-                int val = unlimitedPower(parsed, dim);
-                if (val == 13) return; else continue;
-            }
-        }
-    }
-
-}
-
 /// Functie pentru tratarea cazurilor cu ;
 
-void handleSemicolon (char* command) {
+int handleSemicolon (char* command) {
     char *p = strtok(command, ";");
     char commands[100][256];
-    int i=0;
+    int i=0, last;
 
     while (p){
         strcpy(commands[i++],p);
@@ -508,10 +388,269 @@ void handleSemicolon (char* command) {
             else { printf("\n"); exit(0);}
 
         } else {
-            unlimitedPower(parsed, dim);
+            last = unlimitedPower(parsed, dim);
         }
     }
+    return last;
 }
+
+/// Functie pentru tratarea cazurilor cu ||
+
+void handleOr(char *command){
+
+    char *clearComm[100];
+
+    int i;
+
+    for(i=0; i<100; i++){
+        clearComm[i] = strsep(&command, "||");
+        if (clearComm[i] == NULL)
+            break;
+    }
+
+    for (int j=0; j<i; j++) {
+        if(checkForSemicolon(clearComm[j])){
+            int val = handleSemicolon(clearComm[j]);
+            if (val == 13) continue; else return;
+        }
+        else {
+
+            char parsed[100][512];
+            int dim = 0;
+            dim = parseCommand(clearComm[j], parsed);
+
+            if (dim) {
+                if (strcmp(parsed[0], "clear") == 0) {
+                    if (dim != 1) {
+                        continue;
+                    } else {
+                        clearCommand();
+                        return;
+                    }
+
+                } else if (strcmp(parsed[0], "history") == 0) {
+                    if (dim != 1) {
+                        continue;
+                    } else {
+                        showHistory();
+                        return;
+                    }
+
+                } else if (strcmp(parsed[0], "man") == 0) {
+                    if (dim != 1) {
+                        continue;
+                    } else {
+                        man();
+                        return;
+                    }
+
+                } else if (strcmp(parsed[0], "cd") == 0) {
+                    if (dim != 2) {
+                        continue;
+                    } else {
+                        cd(parsed[1]);
+                        return;
+                    }
+
+                } else if (strcmp(parsed[0], "quit") == 0) {
+                    if (dim != 1) {
+                        continue;
+                    } else {
+                        printf("\n");
+                        exit(0);
+                        return;
+                    }
+
+                } else {
+                    int val = unlimitedPower(parsed, dim);
+                    if (val == 13) continue; else return;
+                }
+            }
+        }
+    }
+
+}
+
+/// Functie pentru tratarea cazurilor cu &&
+
+void handleAnd(char *command){
+
+    char *clearComm[100];
+
+    int i;
+
+    for(i=0; i<100; i++){
+        clearComm[i] = strsep(&command, "&&");
+        if (clearComm[i] == NULL)
+            break;
+    }
+
+    for (int j=0; j<i; j++) {
+        if(checkForSemicolon(clearComm[j])){
+            int val = handleSemicolon(clearComm[j]);
+            if (val == 13) return; else continue;
+        }
+        else {
+
+            char parsed[100][512];
+            int dim = 0;
+            dim = parseCommand(clearComm[j], parsed);
+
+            if (dim) {
+                if (strcmp(parsed[0], "clear") == 0) {
+                    if (dim != 1) {
+                        return;
+                    } else {
+                        clearCommand();
+                        continue;
+                    }
+
+                } else if (strcmp(parsed[0], "history") == 0) {
+                    if (dim != 1) {
+                        return;
+                    } else {
+                        showHistory();
+                        continue;
+                    }
+
+                } else if (strcmp(parsed[0], "man") == 0) {
+                    if (dim != 1) {
+                        return;
+                    } else {
+                        man();
+                        continue;
+                    }
+
+                } else if (strcmp(parsed[0], "cd") == 0) {
+                    if (dim != 2) {
+                        return;
+                    } else {
+                        cd(parsed[1]);
+                        continue;
+                    }
+
+                } else if (strcmp(parsed[0], "quit") == 0) {
+                    if (dim != 1) {
+                        return;
+                    } else {
+                        printf("\n");
+                        exit(0);
+                        continue;
+                    }
+
+                } else {
+                    int val = unlimitedPower(parsed, dim);
+                    if (val == 13) return; else continue;
+                }
+            }
+        }
+    }
+
+}
+
+/// Functie pentru cazurile combinate && ||
+
+void handleAndOr(char *command){
+
+    /// In vector vom tine minte ce operator logic se afla inainte comenzii i
+
+    /// logicalType[i] == true => inaintea comenzii i+1 se afla &&, altfel ||
+
+    bool logicalType[200];
+
+    char commands[200][256],aux[256]="";
+
+    int current=0,i=0,j=0;
+
+    while (current < strlen(command)){
+
+        while(current < strlen(command) && command[current] != '&' && command[current] != '|'){
+            aux[i++]=command[current++];
+        }
+
+        aux[i]='\0';
+
+        logicalType[j] = command[current] == '&' ? true : false;
+
+        strcpy(commands[j++],aux);
+        i=0;
+        ++current;
+
+        if(command[current] == '&' || command[current] == '|')
+            ++current;
+    }
+
+    /// nextCommand va decide ce comanda va fi executata in continuare, in functie de succesul executarii comenzii anterioare
+
+    bool nextCommand;
+    int val;
+
+    for (int k = 0; k < j; ++k) {
+        if(checkForSemicolon(commands[k])){
+            val = handleSemicolon(commands[k]);
+            nextCommand = val != 13 ? true : false;
+        }
+        else{
+            char parsed[100][512];
+            int dim = 0;
+            dim = parseCommand(commands[k], parsed);
+
+            if (dim) {
+                if (strcmp(parsed[0], "clear") == 0) {
+                    if (dim != 1) {
+                        nextCommand=false;
+                    } else {
+                        clearCommand();
+                        nextCommand=true;
+                    }
+
+                } else if (strcmp(parsed[0], "history") == 0) {
+                    if (dim != 1) {
+                        nextCommand=false;
+                    } else {
+                        showHistory();
+                        nextCommand=true;
+                    }
+
+                } else if (strcmp(parsed[0], "man") == 0) {
+                    if (dim != 1) {
+                        nextCommand=false;
+                    } else {
+                        man();
+                        nextCommand=true;
+                    }
+
+                } else if (strcmp(parsed[0], "cd") == 0) {
+                    if (dim != 2) {
+                        nextCommand=false;
+                    } else {
+                        cd(parsed[1]);
+                        nextCommand=true;
+                    }
+
+                } else if (strcmp(parsed[0], "quit") == 0) {
+                    if (dim != 1) {
+                        nextCommand=false;
+                    } else {
+                        printf("\n");
+                        exit(0);
+                        nextCommand=true;
+                    }
+
+                } else {
+                    val = unlimitedPower(parsed, dim);
+                    nextCommand = val != 13 ? true : false;
+                }
+            }
+        }
+
+        while(k < j - 1 && nextCommand != logicalType[k]){
+            ++k;
+        }
+
+    }
+}
+
 
 /// Functie ce decide ce comanda va fi executata la fiecare instructiune
 
@@ -521,7 +660,10 @@ void allCommands(char *command, int history)
 
         //Daca avem pipe, apelam functia ce trateaza acest caz, altfel verificam ce comanda avem
 
-        if(checkForOr(command)) {
+        if(checkForOr(command) && checkForAnd(command)){
+            handleAndOr(command);
+
+        } else if(checkForOr(command)) {
             handleOr(command);
 
         } else if(checkForPipe(command)) {
@@ -532,51 +674,52 @@ void allCommands(char *command, int history)
 
         } else if (checkForSemicolon(command)) {
             handleSemicolon(command);
+
         } else {
-                char parsed[100][512];
-                int dim = 0;
-                dim = parseCommand(command, parsed);
+            char parsed[100][512];
+            int dim = 0;
+            dim = parseCommand(command, parsed);
 
-                if (strcmp(parsed[0], "clear") == 0) {
-                    if (dim != 1){
-                        printf("Incorrect command! Check our manual -> MAN\n");
-                        man();
-                    }
-                    else clearCommand();
-
-                } else if(strcmp(parsed[0], "history") == 0) {
-                    if (dim != 1){
-                        printf("Incorrect command! Check our manual -> MAN\n");
-                        man();
-                    }
-                    else showHistory();
-
-                } else if (strcmp(parsed[0], "man") == 0){
-                    if (dim != 1){
-                        printf("Incorrect command! Check our manual -> MAN\n");
-                        man();
-                    }
-                    else man();
-
-                } else if (strcmp(parsed[0], "cd") == 0){
-                    if (dim != 2){
-                        printf("Incorrect command! Check our manual -> MAN\n");
-                        man();
-                    }
-                    else cd(parsed[1]);
-
-                } else if (strcmp(parsed[0], "quit") == 0){
-                    if (dim != 1){
-                        printf("Incorrect command! Check our manual -> MAN\n");
-                        man();
-                    }
-                    else { printf("\n"); exit(0);}
-
-                } else {
-                    unlimitedPower(parsed, dim);
+            if (strcmp(parsed[0], "clear") == 0) {
+                if (dim != 1){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
                 }
+                else clearCommand();
+
+            } else if(strcmp(parsed[0], "history") == 0) {
+                if (dim != 1){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else showHistory();
+
+            } else if (strcmp(parsed[0], "man") == 0){
+                if (dim != 1){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else man();
+
+            } else if (strcmp(parsed[0], "cd") == 0){
+                if (dim != 2){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else cd(parsed[1]);
+
+            } else if (strcmp(parsed[0], "quit") == 0){
+                if (dim != 1){
+                    printf("Incorrect command! Check our manual -> MAN\n");
+                    man();
+                }
+                else { printf("\n"); exit(0);}
+
+            } else {
+                unlimitedPower(parsed, dim);
             }
         }
+    }
 }
 
 
