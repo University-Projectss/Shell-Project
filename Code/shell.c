@@ -20,7 +20,7 @@
 
 /// Functia MAN ce ofera un manual de utilizare al shell-ului
 
-void man(){
+void manual(){
     printf("MANUAL\n");
     printf("01. MAN: shows all the commands\n");
     printf("    Command: man\n");
@@ -355,35 +355,35 @@ int handleSemicolon (char* command) {
         if (strcmp(parsed[0], "clear") == 0) {
             if (dim != 1){
                 printf("Incorrect command! Check our manual -> MAN\n");
-                man();
+                manual();
             }
             else clearCommand();
 
         } else if(strcmp(parsed[0], "history") == 0) {
             if (dim != 1){
                 printf("Incorrect command! Check our manual -> MAN\n");
-                man();
+                manual();
             }
             else showHistory();
 
-        } else if (strcmp(parsed[0], "man") == 0){
+        } else if (strcmp(parsed[0], "manual") == 0){
             if (dim != 1){
                 printf("Incorrect command! Check our manual -> MAN\n");
-                man();
+                manual();
             }
-            else man();
+            else manual();
 
         } else if (strcmp(parsed[0], "cd") == 0){
             if (dim != 2){
                 printf("Incorrect command! Check our manual -> MAN\n");
-                man();
+                manual();
             }
             else cd(parsed[1]);
 
         } else if (strcmp(parsed[0], "quit") == 0){
             if (dim != 1){
                 printf("Incorrect command! Check our manual -> MAN\n");
-                man();
+                manual();
             }
             else { printf("\n"); exit(0);}
 
@@ -436,11 +436,11 @@ void handleOr(char *command){
                         return;
                     }
 
-                } else if (strcmp(parsed[0], "man") == 0) {
+                } else if (strcmp(parsed[0], "manual") == 0) {
                     if (dim != 1) {
                         continue;
                     } else {
-                        man();
+                        manual();
                         return;
                     }
 
@@ -513,11 +513,11 @@ void handleAnd(char *command){
                         continue;
                     }
 
-                } else if (strcmp(parsed[0], "man") == 0) {
+                } else if (strcmp(parsed[0], "manual") == 0) {
                     if (dim != 1) {
                         return;
                     } else {
-                        man();
+                        manual();
                         continue;
                     }
 
@@ -612,11 +612,11 @@ void handleAndOr(char *command){
                         nextCommand=true;
                     }
 
-                } else if (strcmp(parsed[0], "man") == 0) {
+                } else if (strcmp(parsed[0], "manual") == 0) {
                     if (dim != 1) {
                         nextCommand=false;
                     } else {
-                        man();
+                        manual();
                         nextCommand=true;
                     }
 
@@ -683,35 +683,35 @@ void allCommands(char *command, int history)
             if (strcmp(parsed[0], "clear") == 0) {
                 if (dim != 1){
                     printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
+                    manual();
                 }
                 else clearCommand();
 
             } else if(strcmp(parsed[0], "history") == 0) {
                 if (dim != 1){
                     printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
+                    manual();
                 }
                 else showHistory();
 
-            } else if (strcmp(parsed[0], "man") == 0){
+            } else if (strcmp(parsed[0], "manual") == 0){
                 if (dim != 1){
                     printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
+                    manual();
                 }
-                else man();
+                else manual();
 
             } else if (strcmp(parsed[0], "cd") == 0){
                 if (dim != 2){
                     printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
+                    manual();
                 }
                 else cd(parsed[1]);
 
             } else if (strcmp(parsed[0], "quit") == 0){
                 if (dim != 1){
                     printf("Incorrect command! Check our manual -> MAN\n");
-                    man();
+                    manual();
                 }
                 else { printf("\n"); exit(0);}
 

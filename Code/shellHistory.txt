@@ -1,6 +1,13 @@
-rm a || touch b
-rm b || touch a
-touch a || touch b
-rm a && touch b
-rm b
-quit
+clear
+manual
+manual
+clear
+manual
+clear
+man ls
+manual
+clear
+man cd
+man ls
+claer
+clear
