@@ -1,6 +1,8 @@
 # Shell-Project
 Creating a Shell in C.
 
+# Final Grade - 10/10
+
 # Team members and contributions:
 ### Irina Enescu:
 - added the manual with all the shell commands
